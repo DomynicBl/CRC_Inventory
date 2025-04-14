@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'pages/home_page.dart';
-import 'pages/login_screen.dart';
+import 'pages/Home/home_page.dart';
+import 'pages/Login/login_screen.dart';
 
 void main(){
   runApp(const SGLApp());

@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
-import 'MachineForm.dart'; // ajuste o caminho conforme necessário
-import 'search_screen.dart'; // import da tela de pesquisa
-import 'package:project_crc/pages/home_screen.dart';
+import '../MachineForm.dart'; // ajuste o caminho conforme necessário
+
+/* IMPORTAÇÃO DE TELAS DA HOME */
+import 'map_page.dart'; // importa tela do mapa
+import 'search_page.dart'; // import da tela de pesquisa
+import 'profile_page.dart'; // importa tela de usuario
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -61,9 +64,18 @@ class _HomePageState extends State<HomePage> {
   // Lista de páginas para cada aba
   static final List<Widget> _pages = <Widget>[
     const HomeContent(),
+    const MapScreen(),
     const SearchScreen(),
     const ProfileScreen(),
   ];
+
+  final List<String> _titles = [
+  'Painel de Inventário',
+  'Mapa',
+  'Pesquisa',
+  'Perfil',
+];
+
 
   void _onTabSelected(int index) {
     setState(() {
@@ -84,11 +96,7 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          _selectedIndex == 0
-              ? 'Painel de Inventário'
-              : _selectedIndex == 1
-              ? 'Pesquisa'
-              : 'Perfil',
+          _titles[_selectedIndex],
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         centerTitle: false,
@@ -118,6 +126,7 @@ class _HomePageState extends State<HomePage> {
         onTap: _onTabSelected,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Início'),
+          BottomNavigationBarItem(icon: Icon(Icons.map), label: 'Mapa'),
           BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Pesquisa'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Perfil'),
         ],
@@ -187,49 +196,6 @@ class _QuickAction extends StatelessWidget {
           Text(
             label,
             style: const TextStyle(fontSize: 14, color: Colors.black87),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class ProfileScreen extends StatelessWidget {
-  const ProfileScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    // Conteúdo de exemplo para a área de perfil
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const CircleAvatar(
-            radius: 40,
-            backgroundColor: Color(0xFF002238),
-            child: Icon(Icons.person, size: 40, color: Colors.white),
-          ),
-          const SizedBox(height: 16),
-          const Text(
-            'teste',
-            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            'teste@email.com',
-            style: TextStyle(fontSize: 16, color: Colors.grey),
-          ),
-          const SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: () {
-              // Ao clicar em "Sair", redireciona para a HomePage
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => HomePage()),
-              );
-            },
-
-            child: const Text('Sair'),
           ),
         ],
       ),

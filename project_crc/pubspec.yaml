@@ -63,6 +63,7 @@ flutter:
   assets:
   - assets/images/Logo - Dark.svg
   - assets/images/Logo - Light.svg
+  - assets/images/mapaPuc.jpeg
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
 

@@ -1,4 +1,4 @@
-import 'package:project_crc/pages/home_screen.dart';
+import 'package:project_crc/pages/Home/home_screen.dart';
 import 'package:flutter/material.dart';
 
 class LoginPage extends StatelessWidget {
