@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 //import 'package:project_crc/pages/search_screen.dart';
-import 'package:project_crc/pages/project_infos.dart';
-import 'package:project_crc/pages/home_screen.dart';
+import 'package:project_crc/pages/Login/project_infos.dart';
+import 'package:project_crc/pages/Home/home_screen.dart';
 
 
 class HomePage extends StatelessWidget {
