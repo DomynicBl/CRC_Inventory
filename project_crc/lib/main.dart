@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'pages/Home/home_page.dart';
 import 'pages/Login/login_screen.dart';
 
 void main(){
@@ -14,7 +13,7 @@ class SGLApp extends StatelessWidget {
     return MaterialApp(
       title: 'SGI - Sistema de Gestão de Inventário',
       debugShowCheckedModeBanner: false,
-      home: HomePage(),
+      home: LoginScreen(),
     );
   }
 }

@@ -1,147 +1,307 @@
-import 'package:project_crc/pages/Home/home_screen.dart';
+/* SERVICOS */
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
-class LoginPage extends StatelessWidget {
-  const LoginPage({super.key});
+/* PAGINAS */
+import 'package:project_crc/pages/Login/project_infos.dart';
+import 'package:project_crc/pages/Home/home_screen.dart';
 
-  // Função para exibir um diálogo de erro
+/* CLASSE PRINCIPAL */
+class LoginScreen extends StatefulWidget {
+  // Alterado para StatefulWidget
+  const LoginScreen({super.key});
+
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+
+  /* PROPORCOES */
+  final double _logoHeightRatio = 0.2; // 20% da altura da tela
+  final double _bottomMarginRatio = 0.05; // 5% da altura da tela
+  /* PARA ENVIAR COM ENTER */
+  late FocusNode _emailFocusNode;
+  late FocusNode _passwordFocusNode;
+  /* PARA NAO APAGAR FORMULARIO */
+  late TextEditingController _emailController;
+  late TextEditingController _passwordController;
+
+
+  @override
+void initState() {
+  super.initState();
+  _emailFocusNode = FocusNode();
+  _passwordFocusNode = FocusNode();
+  _emailController = TextEditingController();
+  _passwordController = TextEditingController();
+}
+
+
+  @override
+void dispose() {
+  _emailFocusNode.dispose();
+  _passwordFocusNode.dispose();
+  _emailController.dispose();
+  _passwordController.dispose();
+  super.dispose();
+}
+
+
+
+  /// Mensagem para quando o login for invalido
   void _mostrarErro(BuildContext context, String mensagem) {
     showDialog(
       context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text("Erro de Login"),
-          content: Text(mensagem),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text("Fechar"),
-            )
-          ],
-        );
-      },
+      builder:
+          (context) => AlertDialog(
+            title: const Text("Erro de Login"),
+            content: Text(mensagem),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text("Fechar"),
+              ),
+            ],
+          ),
     );
   }
 
-  // Função de validação e navegação para a HomePage
+  /// Realiza login (Apenas em teste)
   void _efetuarLogin(BuildContext context, String usuario, String senha) {
-    // Credenciais de teste
     if (usuario == 'teste' && senha == '123') {
-      // Se as credenciais forem válidas, navega para a HomePage
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const HomePage()),
+        MaterialPageRoute(builder: (context) => MyApp()),
       );
     } else {
-      // Caso contrário, exibe mensagem de erro
       _mostrarErro(context, "Usuário ou senha incorretos");
     }
   }
 
+  /// Construtor da tela de login
   @override
   Widget build(BuildContext context) {
-    final userController = TextEditingController();
-    final passController = TextEditingController();
+    final screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
-      backgroundColor: Color(0xFF002238),
-      body: Center(
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              const SizedBox(height: 20),
-              const Text(
-                'SGI',
+      backgroundColor: const Color(0xFF002238),
+      body: SafeArea(
+        child: Column(
+          children: [
+            // Cabeçalho - Idioma
+            Container(
+              height: screenHeight * 0.05,
+              alignment: Alignment.center,
+              child: const Text(
+                'Português (Brasil)',
                 style: TextStyle(
-                  fontSize: 60,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 4,
-                ),
-              ),
-              const Text(
-                'SISTEMA DE GESTÃO DE INVENTÁRIOS',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                  letterSpacing: 1,
-                ),
-              ),
-              const SizedBox(height: 30),
-              Container(
-                
-                margin: const EdgeInsets.symmetric(horizontal: 35),
-                decoration: BoxDecoration(
+                  fontSize: 12,
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Column(
-                  children: [
-                    
-                    TextField(
-                      controller: userController,
-                      decoration: const InputDecoration(
-                        iconColor: Color(0xFF262626),
-                        border: OutlineInputBorder(),
-                        
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    TextField(
-                      controller: passController,
-                      obscureText: true,
-                      decoration: InputDecoration(
-                        labelText: 'Senha',
-                        hintText: 'Sua senha',
-                        border: const OutlineInputBorder(),
-                        suffixIcon: IconButton(
-                          icon: const Icon(Icons.visibility),
-                          onPressed: () {},
-                        ),
-                      ),
-                    ),
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: TextButton(
-                        onPressed: () {},
-                        child: const Text("Esqueci minha senha"),
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: () {
-                          // Chama função de login usando os valores dos controladores
-                          _efetuarLogin(
-                            context,
-                            userController.text,
-                            passController.text,
-                          );
-                        },
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                        ),
-                        child: const Text("Fazer login"),
-                      ),
-                    ),
-                  ],
+                  fontWeight: FontWeight.w500,
                 ),
               ),
-              const SizedBox(height: 12),
-              TextButton(
+            ),
+
+            // Logo
+            Container(
+              height: screenHeight * _logoHeightRatio,
+              padding: const EdgeInsets.symmetric(vertical: 10),
+              child: SvgPicture.asset(
+                'assets/images/Logo - Dark.svg',
+                fit: BoxFit.contain,
+              ),
+            ),
+
+            // Seção de Login
+            Expanded(
+              child: Container(
+                width: MediaQuery.of(context).size.width * 0.8,
+                margin: const EdgeInsets.only(top: 20),
+                child: _buildLoginForm(
+                  context,
+                  _emailController,
+                  _passwordController,
+                ),
+              ),
+            ),
+
+            // Botão "Criar Nova Conta"
+            Container(
+              width: MediaQuery.of(context).size.width * 0.8,
+              margin: EdgeInsets.only(
+                bottom: screenHeight * _bottomMarginRatio,
+              ),
+              child: ElevatedButton(
                 onPressed: () {},
-                child: const Text("Problemas ao entrar? Suporte"),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF033D56),
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                ),
+                child: const Text(
+                  "Criar Nova Conta",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
-              const SizedBox(height: 8),
-              const Text("SGI v0.1",
-                  style: TextStyle(fontSize: 12, color: Colors.grey)),
-              const SizedBox(height: 20),
-            ],
-          ),
+            ),
+
+            // Versão do sistema
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                MouseRegion(
+                  cursor: SystemMouseCursors.click,
+                  child: InkWell(
+                    splashColor: Colors.transparent,
+                    highlightColor: Colors.transparent,
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => InfosPage()),
+                      );
+                    },
+                    child: const Text(
+                      'SGI V0.1',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.white,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );
   }
+
+  Widget _buildLoginForm(
+    BuildContext context,
+    TextEditingController emailController,
+    TextEditingController passwordController,
+  ) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        // Campo Usuário
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              "Usuário",
+              style: TextStyle(
+                fontSize: 20,
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: emailController,
+              focusNode: _emailFocusNode, // Novo: Vincula focus node
+              textInputAction: TextInputAction.next, // Novo: Ação do teclado
+              onSubmitted: (_) {
+                // Novo: Enter no campo usuário
+                FocusScope.of(context).requestFocus(_passwordFocusNode);
+              },
+              decoration: _inputDecoration(),
+              style: const TextStyle(fontSize: 18),
+            ),
+          ],
+        ),
+
+        // Campo Senha
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              "Senha",
+              style: TextStyle(
+                fontSize: 20,
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: passwordController,
+              focusNode: _passwordFocusNode, // Novo: Vincula focus node
+              textInputAction: TextInputAction.done, // Novo: Ação do teclado
+              onSubmitted: (_) {
+                // Novo: Enter no campo senha
+                _efetuarLogin(
+                  context,
+                  emailController.text,
+                  passwordController.text,
+                );
+              },
+              decoration: _inputDecoration(),
+              style: const TextStyle(fontSize: 18),
+              obscureText: true,
+            ),
+          ],
+        ),
+
+        // Botão Login + Esqueci a senha
+        Column(
+          children: [
+            SizedBox(
+              width: double.infinity,
+              height: 50,
+              child: ElevatedButton(
+                onPressed:
+                    () => _efetuarLogin(
+                      context,
+                      emailController.text,
+                      passwordController.text,
+                    ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF0083A2),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                ),
+                child: const Text(
+                  "Login",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: () {},
+              child: const Text(
+                "Esqueci minha senha?",
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  InputDecoration _inputDecoration() {
+    return InputDecoration(
+      filled: true,
+      fillColor: const Color(0xFFE4E4E4),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(5),
+        borderSide: const BorderSide(color: Color(0xFF262626), width: 2),
+      ),
+    );
+  }
 }
-
-
