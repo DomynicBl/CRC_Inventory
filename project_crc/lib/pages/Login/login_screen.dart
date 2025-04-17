@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 /* PAGINAS */
 import 'package:project_crc/pages/Login/project_infos.dart';
+import 'package:project_crc/pages/Login/create_screen.dart';
 import 'package:project_crc/pages/Home/home_screen.dart';
 
 /* CLASSE PRINCIPAL */
@@ -16,7 +17,6 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-
   /* PROPORCOES */
   final double _logoHeightRatio = 0.2; // 20% da altura da tela
   final double _bottomMarginRatio = 0.05; // 5% da altura da tela
@@ -27,27 +27,23 @@ class _LoginScreenState extends State<LoginScreen> {
   late TextEditingController _emailController;
   late TextEditingController _passwordController;
 
+  @override
+  void initState() {
+    super.initState();
+    _emailFocusNode = FocusNode();
+    _passwordFocusNode = FocusNode();
+    _emailController = TextEditingController();
+    _passwordController = TextEditingController();
+  }
 
   @override
-void initState() {
-  super.initState();
-  _emailFocusNode = FocusNode();
-  _passwordFocusNode = FocusNode();
-  _emailController = TextEditingController();
-  _passwordController = TextEditingController();
-}
-
-
-  @override
-void dispose() {
-  _emailFocusNode.dispose();
-  _passwordFocusNode.dispose();
-  _emailController.dispose();
-  _passwordController.dispose();
-  super.dispose();
-}
-
-
+  void dispose() {
+    _emailFocusNode.dispose();
+    _passwordFocusNode.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
 
   /// Mensagem para quando o login for invalido
   void _mostrarErro(BuildContext context, String mensagem) {
@@ -238,58 +234,63 @@ void dispose() {
         ),
 
         // Botão "Criar Nova Conta"
-            Container(
-              width: MediaQuery.of(context).size.width * 0.8,
-              margin: EdgeInsets.only(
-                bottom: MediaQuery.of(context).size.height * _bottomMarginRatio,
-              ),
-              child: ElevatedButton(
-                onPressed: () {},
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF033D56),
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(5),
-                  ),
-                ),
-                child: const Text(
-                  "Criar Nova Conta",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+        Container(
+          width: MediaQuery.of(context).size.width * 0.8,
+          margin: EdgeInsets.only(
+            bottom: MediaQuery.of(context).size.height * _bottomMarginRatio,
+          ),
+          child: ElevatedButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const RegisterScreen()),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF033D56),
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(5),
               ),
             ),
+            child: const Text(
+              "Criar Nova Conta",
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ),
 
-            // Versão do sistema
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                MouseRegion(
-                  cursor: SystemMouseCursors.click,
-                  child: InkWell(
-                    splashColor: Colors.transparent,
-                    highlightColor: Colors.transparent,
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => InfosPage()),
-                      );
-                    },
-                    child: const Text(
-                      'SGI V0.1',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.white,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
+        // Versão do sistema
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            MouseRegion(
+              cursor: SystemMouseCursors.click,
+              child: InkWell(
+                splashColor: Colors.transparent,
+                highlightColor: Colors.transparent,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => InfosPage()),
+                  );
+                },
+                child: const Text(
+                  'SGI V0.1',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.white,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
-              ],
+              ),
             ),
+          ],
+        ),
       ],
     );
   }
