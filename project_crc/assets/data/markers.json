@@ -1,0 +1,57 @@
+[
+    {
+      "number": 36,
+      "name": "proinfra",
+      "x": 0.31,
+      "y": 0.42
+    },
+    {
+      "number": 35,
+      "name": "proinfra",
+      "x": 0.33,
+      "y": 0.43
+    },
+    {
+      "number": 70,
+      "name": "Sala de Manutencao Civil",
+      "x": 0.35,
+      "y": 0.4
+    },
+    {
+      "number": 55,
+      "name": "Galpao de Serralheria",
+      "x": 0.335,
+      "y": 0.39
+    },
+    {
+      "number": 80,
+      "name": "Redentoristas",
+      "x": 0.25,
+      "y": 0.39
+    },
+    {
+      "number": 54,
+      "name": "Emaus",
+      "x": 0.26,
+      "y": 0.28
+    },
+    {
+      "number": 13,
+      "name": "FCA",
+      "x": 0.605,
+      "y": 0.51
+    },
+    {
+      "number": 12,
+      "name": "Faculdade de Psicologia",
+      "x": 0.645,
+      "y": 0.51
+    },
+    {
+      "number": 26,
+      "name": "Biblioteca",
+      "x": 0.44,
+      "y": 0.42
+    }
+  ]
+  
