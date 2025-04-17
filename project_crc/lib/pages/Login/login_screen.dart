@@ -125,60 +125,6 @@ void dispose() {
                 ),
               ),
             ),
-
-            // Botão "Criar Nova Conta"
-            Container(
-              width: MediaQuery.of(context).size.width * 0.8,
-              margin: EdgeInsets.only(
-                bottom: screenHeight * _bottomMarginRatio,
-              ),
-              child: ElevatedButton(
-                onPressed: () {},
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF033D56),
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(5),
-                  ),
-                ),
-                child: const Text(
-                  "Criar Nova Conta",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ),
-
-            // Versão do sistema
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                MouseRegion(
-                  cursor: SystemMouseCursors.click,
-                  child: InkWell(
-                    splashColor: Colors.transparent,
-                    highlightColor: Colors.transparent,
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => InfosPage()),
-                      );
-                    },
-                    child: const Text(
-                      'SGI V0.1',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.white,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
           ],
         ),
       ),
@@ -290,6 +236,60 @@ void dispose() {
             ),
           ],
         ),
+
+        // Botão "Criar Nova Conta"
+            Container(
+              width: MediaQuery.of(context).size.width * 0.8,
+              margin: EdgeInsets.only(
+                bottom: MediaQuery.of(context).size.height * _bottomMarginRatio,
+              ),
+              child: ElevatedButton(
+                onPressed: () {},
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF033D56),
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                ),
+                child: const Text(
+                  "Criar Nova Conta",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+
+            // Versão do sistema
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                MouseRegion(
+                  cursor: SystemMouseCursors.click,
+                  child: InkWell(
+                    splashColor: Colors.transparent,
+                    highlightColor: Colors.transparent,
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => InfosPage()),
+                      );
+                    },
+                    child: const Text(
+                      'SGI V0.1',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.white,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
       ],
     );
   }
