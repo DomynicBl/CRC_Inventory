@@ -1,0 +1,62 @@
+# Informações de Controle
+name: project_sgi 
+description: Sistema de Gerenciamento de Inventário - CRC
+custom_license: "Uso Acadêmico - veja o arquivo LICENSE"
+version: 1.0.0+1
+publish_to: 'none'
+
+# Ambiente necessário para rodar o projeto
+environment:
+  sdk: ^3.7.2
+
+# Dependências principais do projeto
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8  # Ícones estilo iOS
+  flutter_svg: ^2.0.9      # Para usar arquivos .svg como imagens
+  url_launcher: ^6.1.7     # Para abrir links externos
+
+# Dependências de desenvolvimento (testes, lints e ferramentas auxiliares)
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  flutter_launcher_icons: ^0.13.1
+
+# Configuração dos ícones do aplicativo
+flutter_launcher_icons:
+  android: true
+  ios: false
+  image_path: "assets/images/Icon - Dark.png"
+
+# Recursos utilizados pelo Flutter (design, imagens, dados)
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/Logo - Dark.svg
+    - assets/images/Logo - Light.svg
+    - assets/images/mapaPuc.jpeg
+    - assets/data/markers.json
+
+# Informações dos autores (campo não oficial, mas útil para controle interno)
+# Se quiser usar o campo oficial, use apenas "author: Nome <email>" com um único autor
+authors:
+  - Domynic Barros Lima <domynicbarroslima@gmail.com>
+  - Juan Pablo Ramos de Oliveira <>
+  - Ângelo Gabriel de Freitas Marques <>
+  - Vinícius Figueiredo Ferreira <>
+
+# Metadados adicionais do projeto
+repository: https://github.com/DomynicBl/CRC_Inventory
+homepage: https://github.com/DomynicBl/CRC_Inventory
+issue_tracker: https://github.com/DomynicBl/CRC_Inventory/issues
+
+keywords:
+  - inventário
+  - controle
+  - gerenciamento
+  - flutter
+  - CRC
+  - SGI
