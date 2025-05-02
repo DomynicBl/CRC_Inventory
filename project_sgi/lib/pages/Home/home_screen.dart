@@ -3,7 +3,7 @@ import '../MachineForm.dart'; // ajuste o caminho conforme necessário
 
 /* IMPORTAÇÃO DE TELAS DA HOME */
 import '../Map/map_page.dart'; // importa tela do mapa
-import '../Map/search_page.dart'; // import da tela de pesquisa
+import '../Scanner/barcode_scanner_page.dart'; // import da tela de Leitor de Código de Barras
 import 'profile_page.dart'; // importa tela de usuario
 
 class MyApp extends StatelessWidget {
@@ -65,14 +65,14 @@ class _HomePageState extends State<HomePage> {
   static final List<Widget> _pages = <Widget>[
     const HomeContent(),
     const MapScreen(),
-    const SearchScreen(),
+    const BarcodeScannerPage(),
     const ProfileScreen(),
   ];
 
   final List<String> _titles = [
   'Painel de Inventário',
   'Mapa',
-  'Pesquisa',
+  'BarCode',
   'Perfil',
 ];
 
@@ -127,7 +127,7 @@ class _HomePageState extends State<HomePage> {
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Início'),
           BottomNavigationBarItem(icon: Icon(Icons.map), label: 'Mapa'),
-          BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Pesquisa'),
+          BottomNavigationBarItem(icon: Icon(Icons.barcode_reader), label: 'Pesquisa'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Perfil'),
         ],
       ),

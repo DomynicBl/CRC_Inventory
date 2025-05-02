@@ -78,42 +78,6 @@ class _MapScreenState extends State<MapScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Mapa Interativo'),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(70),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _searchController,
-                    decoration: InputDecoration(
-                      hintText: 'Buscar patrimônio...',
-                      prefixIcon: const Icon(Icons.search),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                      suffixIcon: IconButton(
-                        icon: const Icon(Icons.clear),
-                        onPressed: () {
-                          _searchController.clear();
-                        },
-                      ),
-                    ),
-                    onSubmitted: (_) => _performSearch(),
-                    keyboardType: TextInputType.number,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                ElevatedButton(
-                  onPressed: _performSearch,
-                  child: const Text('Buscar'),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
       body: _isSearching
           ? _buildSearchResult()
           : FutureBuilder<Size>(
@@ -226,8 +190,9 @@ class _MapScreenState extends State<MapScreen> {
     final top = offsetY + displayedHeight * marker.y;
 
     final scale = _transformationController.value.getMaxScaleOnAxis();
-    double baseSize = 30;
-    double markerSize = baseSize - ((scale - 1.0) / 4) * 22;
+    double baseSize = 25;
+    double diminuir = 8;
+    double markerSize = baseSize - ((scale - 1.0) / 4) * (baseSize-diminuir);
 
     return Positioned(
       left: left - markerSize / 2,

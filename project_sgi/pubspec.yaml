@@ -16,6 +16,8 @@ dependencies:
   cupertino_icons: ^1.0.8  # Ícones estilo iOS
   flutter_svg: ^2.0.9      # Para usar arquivos .svg como imagens
   url_launcher: ^6.1.7     # Para abrir links externos
+  mobile_scanner: ^4.0.1   # Para barcode scanner mobile
+  # barcode_scan2: ^4.2.0    # Para barcode scanner web
 
 # Dependências de desenvolvimento (testes, lints e ferramentas auxiliares)
 dev_dependencies:
