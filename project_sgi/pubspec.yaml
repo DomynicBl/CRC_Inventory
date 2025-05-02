@@ -37,14 +37,14 @@ flutter:
   assets:
     - assets/images/Logo - Dark.svg
     - assets/images/Logo - Light.svg
-    - assets/images/mapaPuc.jpeg
+    - assets/images/mapaPuc.png
     - assets/data/markers.json
 
 # Informações dos autores (campo não oficial, mas útil para controle interno)
 # Se quiser usar o campo oficial, use apenas "author: Nome <email>" com um único autor
 authors:
   - Domynic Barros Lima <domynicbarroslima@gmail.com>
-  - Juan Pablo Ramos de Oliveira <>
+  - Juan Pablo Ramos de Oliveira <juannpaablo@gmail.com>
   - Ângelo Gabriel de Freitas Marques <>
   - Vinícius Figueiredo Ferreira <>
 
