@@ -3,7 +3,7 @@ import '../MachineForm.dart'; // ajuste o caminho conforme necessário
 
 /* IMPORTAÇÃO DE TELAS DA HOME */
 import '../Map/map_page.dart'; // importa tela do mapa
-import 'search_page.dart'; // import da tela de pesquisa
+import '../Map/search_page.dart'; // import da tela de pesquisa
 import 'profile_page.dart'; // importa tela de usuario
 
 class MyApp extends StatelessWidget {
