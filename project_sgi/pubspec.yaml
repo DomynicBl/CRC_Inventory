@@ -17,6 +17,10 @@ dependencies:
   flutter_svg: ^2.0.9      # Para usar arquivos .svg como imagens
   url_launcher: ^6.1.7     # Para abrir links externos
   mobile_scanner: ^4.0.1   # Para barcode scanner mobile
+  sembast: ^3.4.6          # SGBD
+  sembast_web: ^2.0.1      # necessário para uso no Flutter Web
+  path_provider: ^2.1.2    
+  path: ^1.9.0
   # barcode_scan2: ^4.2.0    # Para barcode scanner web
 
 # Dependências de desenvolvimento (testes, lints e ferramentas auxiliares)

@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'pages/Login/login_screen.dart';
+import 'database/sembast_service.dart';
 
-void main(){
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await SembastService().init();
   runApp(const SGLApp());
 }
 

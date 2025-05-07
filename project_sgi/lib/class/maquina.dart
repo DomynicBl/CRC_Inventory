@@ -207,4 +207,57 @@ class Maquina {
 
 
 
+extension MaquinaSerializer on Maquina {
+  Map<String, dynamic> toMap() {
+    return {
+      'patrimonio': patrimonio,
+      'tipo': tipo,
+      'marca': marca,
+      'modelo': modelo,
+      'processadorBrand': processadorBrand,
+      'processadorFamily': processadorFamily,
+      'processadorGeracao': processadorGeracao,
+      'processadorSpec': processadorSpec,
+      'memoriaRam': memoriaRam.map((ram) => {
+        'brand': ram.brand,
+        'type': ram.type,
+        'size': ram.size,
+      }).toList(),
+      'discos': discos.map((d) => {
+        'brand': d.brand,
+        'type': d.type,
+        'size': d.size,
+      }).toList(),
+      'temProblema': temProblema,
+      'problemaAtual': problemaAtual,
+      'descricaoProblema': descricaoProblema,
+      'dataCadastro': dataCadastro.toIso8601String(),
+      'ultimaRevisao': ultimaRevisao.toIso8601String(),
+    };
+  }
+
+  static Maquina fromMap(Map<String, dynamic> map) {
+    return Maquina.carregar(
+      patrimonio: map['patrimonio'],
+      tipo: map['tipo'],
+      marca: map['marca'],
+      modelo: map['modelo'],
+      processadorBrand: map['processadorBrand'],
+      processadorFamily: map['processadorFamily'],
+      processadorGeracao: map['processadorGeracao'],
+      processadorSpec: map['processadorSpec'],
+      memoriaRam: (map['memoriaRam'] as List).map((r) => Ram(
+        brand: r['brand'], type: r['type'], size: r['size']
+      )).toList(),
+      discos: (map['discos'] as List).map((d) => Disco(
+        brand: d['brand'], type: d['type'], size: d['size']
+      )).toList(),
+      temProblema: map['temProblema'],
+      problemaAtual: map['problemaAtual'],
+      descricaoProblema: map['descricaoProblema'],
+      dataCadastro: DateTime.parse(map['dataCadastro']),
+      ultimaRevisao: DateTime.parse(map['ultimaRevisao']),
+    );
+  }
+}
 

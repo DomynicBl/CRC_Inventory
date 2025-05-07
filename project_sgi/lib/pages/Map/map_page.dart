@@ -14,7 +14,8 @@ class MapScreen extends StatefulWidget {
 class _MapScreenState extends State<MapScreen> {
   late Future<List<MapMarker>> markerList;
   late Future<Size> imageSize;
-  final TransformationController _transformationController = TransformationController();
+  final TransformationController _transformationController =
+      TransformationController();
   final TextEditingController _searchController = TextEditingController();
 
   final String mapFileName = 'assets/images/mapaPuc.png';
@@ -78,92 +79,135 @@ class _MapScreenState extends State<MapScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _isSearching
-          ? _buildSearchResult()
-          : FutureBuilder<Size>(
-              future: imageSize,
-              builder: (context, snapshot) {
-                if (!snapshot.hasData) {
-                  return const Center(child: CircularProgressIndicator());
-                }
 
-                final size = snapshot.data!;
-                return Center(
-                  child: InteractiveViewer(
-                    transformationController: _transformationController,
-                    panEnabled: true,
-                    minScale: 1.0,
-                    maxScale: 5.0,
-                    child: LayoutBuilder(
-                      builder: (context, constraints) {
-                        final renderedWidth = constraints.maxWidth;
-                        final renderedHeight = constraints.maxHeight;
-
-                        return Stack(
-                          children: [
-                            Image.asset(
-                              mapFileName,
-                              width: renderedWidth,
-                              height: renderedHeight,
-                              fit: BoxFit.contain,
-                            ),
-                            FutureBuilder<List<MapMarker>>(
-                              future: markerList,
-                              builder: (context, markerSnapshot) {
-                                if (!markerSnapshot.hasData) {
-                                  return const SizedBox.shrink();
-                                }
-
-                                final markers = markerSnapshot.data!;
-                                return Stack(
-                                  children: markers
-                                      .map((marker) =>
-                                          _buildMarker(marker, size, constraints))
-                                      .toList(),
-                                );
-                              },
-                            ),
-                          ],
-                        );
+      // Barra de pesquisa
+      appBar: AppBar(
+        title: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          child: Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _searchController,
+                  decoration: InputDecoration(
+                    hintText: 'Buscar patrimônio...',
+                    prefixIcon: const Icon(Icons.search),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    isDense: true, // reduz a altura do campo
+                    contentPadding: const EdgeInsets.all(8),
+                    suffixIcon: IconButton(
+                      icon: const Icon(Icons.clear),
+                      onPressed: () {
+                        _searchController.clear();
                       },
                     ),
                   ),
-                );
-              },
-            ),
+                  onSubmitted: (_) => _performSearch(),
+                  keyboardType: TextInputType.number,
+                ),
+              ),
+              const SizedBox(width: 8),
+              ElevatedButton(
+                onPressed: _performSearch,
+                child: const Text('Buscar'),
+              ),
+            ],
+          ),
+        ),
+      ),
+
+      // Body (Mapa e resultado de pesquisa)
+      body:
+          _isSearching
+              ? _buildSearchResult()
+              : FutureBuilder<Size>(
+                future: imageSize,
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+
+                  final size = snapshot.data!;
+                  return Center(
+                    child: InteractiveViewer(
+                      transformationController: _transformationController,
+                      panEnabled: true,
+                      minScale: 1.0,
+                      maxScale: 5.0,
+                      child: LayoutBuilder(
+                        builder: (context, constraints) {
+                          final renderedWidth = constraints.maxWidth;
+                          final renderedHeight = constraints.maxHeight;
+
+                          return Stack(
+                            children: [
+                              Image.asset(
+                                mapFileName,
+                                width: renderedWidth,
+                                height: renderedHeight,
+                                fit: BoxFit.contain,
+                              ),
+                              FutureBuilder<List<MapMarker>>(
+                                future: markerList,
+                                builder: (context, markerSnapshot) {
+                                  if (!markerSnapshot.hasData) {
+                                    return const SizedBox.shrink();
+                                  }
+
+                                  final markers = markerSnapshot.data!;
+                                  return Stack(
+                                    children:
+                                        markers
+                                            .map(
+                                              (marker) => _buildMarker(
+                                                marker,
+                                                size,
+                                                constraints,
+                                              ),
+                                            )
+                                            .toList(),
+                                  );
+                                },
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+                    ),
+                  );
+                },
+              ),
     );
   }
 
   Widget _buildSearchResult() {
-  return Column(
-    children: [
-      const SizedBox(height: 16), // aproxima da barra de busca
-      ElevatedButton.icon(
-        onPressed: _resetSearch,
-        icon: const Icon(Icons.map),
-        label: const Text('Voltar ao mapa'),
-        style: ElevatedButton.styleFrom(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+    return Column(
+      children: [
+        const SizedBox(height: 16), // aproxima da barra de busca
+        ElevatedButton.icon(
+          onPressed: _resetSearch,
+          icon: const Icon(Icons.map),
+          label: const Text('Voltar ao mapa'),
+          style: ElevatedButton.styleFrom(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          ),
         ),
-      ),
-      const SizedBox(height: 16),
-      Center(
-        child: Card(
-          elevation: 3,
-          margin: const EdgeInsets.symmetric(horizontal: 32),
-          child: Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: Text(
-              _searchResult,
-              style: const TextStyle(fontSize: 18),
+        const SizedBox(height: 16),
+        Center(
+          child: Card(
+            elevation: 3,
+            margin: const EdgeInsets.symmetric(horizontal: 32),
+            child: Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Text(_searchResult, style: const TextStyle(fontSize: 18)),
             ),
           ),
         ),
-      ),
-    ],
-  );
-}
-
+      ],
+    );
+  }
 
   Widget _buildMarker(
     MapMarker marker,
@@ -190,9 +234,9 @@ class _MapScreenState extends State<MapScreen> {
     final top = offsetY + displayedHeight * marker.y;
 
     final scale = _transformationController.value.getMaxScaleOnAxis();
-    double baseSize = 25;
-    double diminuir = 8;
-    double markerSize = baseSize - ((scale - 1.0) / 4) * (baseSize-diminuir);
+    double baseSize = 30;
+    double tamZoom = 8;
+    double markerSize = baseSize - ((scale - 1.0) / 4) * (baseSize - tamZoom);
 
     return Positioned(
       left: left - markerSize / 2,
@@ -230,16 +274,17 @@ class _MapScreenState extends State<MapScreen> {
   void _showMarkerInfo(int number, String name) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Localização $name'),
-        content: Text('Informações detalhadas sobre o prédio $number'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Fechar'),
+      builder:
+          (context) => AlertDialog(
+            title: Text('Localização $name'),
+            content: Text('Informações detalhadas sobre o prédio $number'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Fechar'),
+              ),
+            ],
           ),
-        ],
-      ),
     );
   }
 }

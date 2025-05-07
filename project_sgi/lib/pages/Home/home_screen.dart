@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import '../MachineForm.dart'; // ajuste o caminho conforme necessário
+import '../Machines/MachineForm.dart'; // import do formulario de cadastro de maquinas
 
 /* IMPORTAÇÃO DE TELAS DA HOME */
 import '../Map/map_page.dart'; // importa tela do mapa
 import '../Scanner/barcode_scanner_page.dart'; // import da tela de Leitor de Código de Barras
 import 'profile_page.dart'; // importa tela de usuario
+import 'last_machines_list.dart'; // import da tela das ultimas maquinas adicionadas
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -71,7 +72,7 @@ class _HomePageState extends State<HomePage> {
 
   final List<String> _titles = [
   'Painel de Inventário',
-  'Mapa',
+  'Procurar',
   'BarCode',
   'Perfil',
 ];
@@ -84,12 +85,14 @@ class _HomePageState extends State<HomePage> {
   }
 
   // Ação padrão do FAB (só na aba Home)
-  void _abrirFormulario() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const MachineForm()),
-    );
-  }
+  void _abrirFormulario() async {
+  await Navigator.push(
+    context,
+    MaterialPageRoute(builder: (context) => const MachineForm()),
+  );
+  setState(() {});
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -140,27 +143,7 @@ class HomeContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text(
-              'Bem-vindo ao Inventário de Máquinas',
-              style: TextStyle(
-                fontSize: 20,
-                color: Colors.black87,
-                fontWeight: FontWeight.bold,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 24),
-            // Exemplo de um Card de funcionalidades
-          ],
-        ),
-      ),
-    );
+    return const LastMachinesList();
   }
 }
 

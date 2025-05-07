@@ -1,7 +1,6 @@
-
+import 'package:project_sgi/database/sembast_service.dart';
 import 'package:flutter/material.dart';
 //import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
-
 
 class MachineForm extends StatefulWidget {
   const MachineForm({super.key});
@@ -14,8 +13,6 @@ class MachineForm extends StatefulWidget {
 class _MachineFormState extends State<MachineForm> {
   String? memoryValue;
   String ticket = 'Não Validado'; // Define the ticket variable
-
-
 
   final TextEditingController nomeController = TextEditingController();
   final TextEditingController patrimonioController = TextEditingController();
@@ -47,17 +44,21 @@ class _MachineFormState extends State<MachineForm> {
             const SizedBox(height: 12),
             Row(
               children: [
-                Expanded(child: buildTextField('Patrimônio', patrimonioController)),
+                Expanded(
+                  child: buildTextField('Patrimônio', patrimonioController),
+                ),
                 const SizedBox(width: 12),
                 ElevatedButton(
                   onPressed: () {
                     debugPrint('Escanear patrimônio...');
-                    
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF0066FF),
                   ),
-                  child: const Text('Escanear', style: TextStyle(color: Colors.white), ),
+                  child: const Text(
+                    'Escanear',
+                    style: TextStyle(color: Colors.white),
+                  ),
                 ),
               ],
             ),
@@ -82,29 +83,47 @@ class _MachineFormState extends State<MachineForm> {
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF0066FF),
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 12,
+                  ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
-                child: const Text('Registrar Foto', style: TextStyle(color: Colors.white),),
+                child: const Text(
+                  'Registrar Foto',
+                  style: TextStyle(color: Colors.white),
+                ),
               ),
             ),
 
             const SizedBox(height: 24),
             Center(
+              // BOTAO DE ENVIO
               child: ElevatedButton(
-                onPressed: () {
-                  print('Simulação de envio');
+                onPressed: () async {
+                  final dados = _criarMaquinaComoMapa();
+
+                  await SembastService().addMachine(dados);
+
+                  final todasMaquinas = await SembastService().getAllMachines();
+                  print('Máquinas salvas:');
+                  for (var m in todasMaquinas) {
+                    print(m);
+                  }
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Máquina cadastrada com sucesso!'),
+                    ),
+                  );
+
+                  // ⬅️ Volta para a HomePage
+                  Navigator.pop(context);
                 },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF0066FF),
-                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-                child: const Text('Enviar', style: TextStyle(color: Colors.white),),
+
+                child: Text('Enviar'),
               ),
             ),
           ],
@@ -122,9 +141,7 @@ class _MachineFormState extends State<MachineForm> {
           labelText: label,
           filled: true,
           fillColor: Colors.white,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
         ),
       ),
     );
@@ -141,20 +158,16 @@ class _MachineFormState extends State<MachineForm> {
           labelText: 'Selecione a memória',
           filled: true,
           fillColor: Colors.white,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
         ),
         iconEnabledColor: Colors.black,
-        items: items.map((item) {
-          return DropdownMenuItem<String>(
-            value: item,
-            child: Text(
-              item,
-              style: const TextStyle(color: Colors.black),
-            ),
-          );
-        }).toList(),
+        items:
+            items.map((item) {
+              return DropdownMenuItem<String>(
+                value: item,
+                child: Text(item, style: const TextStyle(color: Colors.black)),
+              );
+            }).toList(),
         onChanged: (value) {
           setState(() {
             memoryValue = value;
@@ -162,5 +175,21 @@ class _MachineFormState extends State<MachineForm> {
         },
       ),
     );
+  }
+
+  Map<String, dynamic> _criarMaquinaComoMapa() {
+    return {
+      'nome': nomeController.text,
+      'patrimonio': patrimonioController.text,
+      'predio': predioController.text,
+      'sala': salaController.text,
+      'monitor': monitorController.text,
+      'modelo': modeloController.text,
+      'processador': processadorController.text,
+      'memoria': memoryValue ?? '',
+      'problema': problemaController.text,
+      'observacoes': observacaoController.text,
+      'dataCadastro': DateTime.now().toIso8601String(),
+    };
   }
 }
