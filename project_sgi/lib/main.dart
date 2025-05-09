@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'pages/Login/login_screen.dart';
-import 'database/sembast_service.dart';
+import 'database/database_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

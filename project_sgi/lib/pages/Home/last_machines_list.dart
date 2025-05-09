@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../database/sembast_service.dart';
+import '../../database/database_service.dart';
 
 class LastMachinesList extends StatefulWidget {
   const LastMachinesList({super.key});
