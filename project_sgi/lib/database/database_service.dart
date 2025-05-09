@@ -5,10 +5,10 @@ import 'package:sembast/sembast.dart';
 import 'package:sembast/sembast_io.dart';      // Mobile
 import 'package:sembast_web/sembast_web.dart'; // Web
 
-class SembastService {
-  static final SembastService _singleton = SembastService._internal();
-  factory SembastService() => _singleton;
-  SembastService._internal();
+class DatabaseService {
+  static final DatabaseService _singleton = DatabaseService._internal();
+  factory DatabaseService() => _singleton;
+  DatabaseService._internal();
 
   late Database _db;
   final _store = intMapStoreFactory.store('maquinas');

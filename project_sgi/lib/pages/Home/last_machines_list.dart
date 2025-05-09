@@ -18,7 +18,7 @@ class _LastMachinesListState extends State<LastMachinesList> {
   }
 
   Future<void> _loadMachines() async {
-    final all = await SembastService().getAllMachines();
+    final all = await DatabaseService().getAllMachines();
     setState(() {
       // ordena pela data decrescente e pega as últimas 10
       _machines = all.reversed.take(10).toList();

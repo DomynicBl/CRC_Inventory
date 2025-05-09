@@ -1,10 +1,15 @@
+// Flutter
 import 'package:flutter/material.dart';
+
+// Screen
 import 'pages/Login/login_screen.dart';
+
+// Database
 import 'database/database_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await SembastService().init();
+  await DatabaseService().init();
   runApp(const SGLApp());
 }
 

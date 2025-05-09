@@ -105,9 +105,9 @@ class _MachineFormState extends State<MachineForm> {
                 onPressed: () async {
                   final dados = _criarMaquinaComoMapa();
 
-                  await SembastService().addMachine(dados);
+                  await DatabaseService().addMachine(dados);
 
-                  final todasMaquinas = await SembastService().getAllMachines();
+                  final todasMaquinas = await DatabaseService().getAllMachines();
                   print('Máquinas salvas:');
                   for (var m in todasMaquinas) {
                     print(m);
