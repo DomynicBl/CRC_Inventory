@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: backend
+    env: node
+    plan: free
+    rootDir: project_sgi/backend
+    buildCommand: npm install
+    startCommand: node index.js
+    envVars:
+      - key: MONGODB_URI
+        sync: false
