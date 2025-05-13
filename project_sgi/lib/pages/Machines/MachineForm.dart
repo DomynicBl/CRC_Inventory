@@ -1,4 +1,5 @@
-import 'package:project_sgi/database/database_service.dart';
+import 'package:project_sgi/api/machine_service.dart';
+
 import 'package:flutter/material.dart';
 //import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 
@@ -105,13 +106,7 @@ class _MachineFormState extends State<MachineForm> {
                 onPressed: () async {
                   final dados = _criarMaquinaComoMapa();
 
-                  await DatabaseService().addMachine(dados);
-
-                  final todasMaquinas = await DatabaseService().getAllMachines();
-                  print('Máquinas salvas:');
-                  for (var m in todasMaquinas) {
-                    print(m);
-                  }
+                  await MachineService().addMachine(dados);
 
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
