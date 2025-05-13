@@ -8,43 +8,35 @@ class LastMachinesList extends StatelessWidget {
   Widget build(BuildContext context) {
     return FutureBuilder<List<Map<String, dynamic>>>(
       future: MachineService().getLastMachines(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
+      builder: (ctx, snap) {
+        if (snap.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
-        } else if (snapshot.hasError) {
-          return Center(child: Text('Erro: ${snapshot.error}'));
-        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return const Center(child: Text('Nenhuma máquina cadastrada.'));
         }
-
-        final machines = snapshot.data!;
-
+        if (snap.hasError) {
+          return Center(child: Text('Erro: ${snap.error}'));
+        }
+        final machines = snap.data!;
+        if (machines.isEmpty) {
+          return const Center(child: Text('Nenhuma máquina encontrada.'));
+        }
         return ListView.builder(
           padding: const EdgeInsets.all(16),
           itemCount: machines.length,
-          itemBuilder: (context, index) {
-            final machine = machines[index];
+          itemBuilder: (_, i) {
+            final m = machines[i];
+            final data = DateTime.parse(m['dataCadastro']);
+            final dateStr = '${data.day}/${data.month}/${data.year}';
             return Card(
               margin: const EdgeInsets.only(bottom: 12),
-              elevation: 2,
               child: ListTile(
-                title: Text(machine['nome'] ?? 'Sem nome'),
-                subtitle: Text('Patrimônio: ${machine['patrimonio'] ?? 'N/A'}'),
-                trailing: Text(
-                  _formatDate(machine['dataCadastro']),
-                  style: const TextStyle(fontSize: 12, color: Colors.grey),
-                ),
+                title: Text(m['nome'] ?? ''),
+                subtitle: Text('Patrimônio: ${m['patrimonio'] ?? ''}'),
+                trailing: Text(dateStr),
               ),
             );
           },
         );
       },
     );
-  }
-
-  String _formatDate(String? isoString) {
-    if (isoString == null) return '';
-    final date = DateTime.parse(isoString);
-    return '${date.day}/${date.month}/${date.year}';
   }
 }

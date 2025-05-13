@@ -2,28 +2,26 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class MachineService {
-  static const String baseUrl = 'http://192.168.0.105:3000/api/machines';
+  // troque essa URL pela sua do Render, sem “/api” extra
+  static const String baseUrl = 'https://crc-inventory.onrender.com';
 
-  Future<void> addMachine(Map<String, dynamic> machineData) async {
-    final response = await http.post(
+  Future<void> addMachine(Map<String, dynamic> data) async {
+    final resp = await http.post(
       Uri.parse(baseUrl),
       headers: {'Content-Type': 'application/json'},
-      body: jsonEncode(machineData),
+      body: jsonEncode(data),
     );
-
-    if (response.statusCode != 200) {
-      throw Exception('Erro ao adicionar máquina: ${response.body}');
+    if (resp.statusCode != 201) {
+      throw Exception('Erro ao cadastrar: ${resp.body}');
     }
   }
 
-  Future<List<Map<String, dynamic>>> getLastMachines({int limit = 10}) async {
-    final response = await http.get(Uri.parse('$baseUrl?limit=$limit'));
-
-    if (response.statusCode != 200) {
-      throw Exception('Erro ao buscar máquinas: ${response.body}');
+  Future<List<Map<String, dynamic>>> getLastMachines() async {
+    final resp = await http.get(Uri.parse(baseUrl));
+    if (resp.statusCode != 200) {
+      throw Exception('Erro ao buscar máquinas: ${resp.body}');
     }
-
-    final List<dynamic> data = jsonDecode(response.body);
-    return data.cast<Map<String, dynamic>>();
+    final List<dynamic> list = jsonDecode(resp.body);
+    return list.cast<Map<String, dynamic>>();
   }
 }
