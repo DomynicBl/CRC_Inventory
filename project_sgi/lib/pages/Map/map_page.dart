@@ -88,21 +88,11 @@ class _MapScreenState extends State<MapScreen> {
         }
       });
 
-      if (machines.isNotEmpty) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder:
-                (context) => SearchResultScreen(
-                  machines: machines,
-                  searchTerm: patrimonio,
-                  onBack: () {
-                    Navigator.pop(context);
-                  },
-                ),
-          ),
-        );
-      }
+      setState(() {
+        _searchResultMachine =
+            machines.first;
+        _searchResult = '';
+      });
     } catch (e) {
       setState(() {
         _searchResult = 'Erro: ${e.toString()}';

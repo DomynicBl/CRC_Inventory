@@ -51,16 +51,27 @@ app.post("/maquinas", async (req, res) => {
     res.status(500).json({ erro: "Erro ao salvar máquina." });
   }
 });
-
-// Rota para obter as 10 últimas máquinas
+s
+// Rota maquinas com verificação
 app.get("/maquinas", async (req, res) => {
+  const { patrimonio } = req.query;
+
   try {
-    const maquinas = await Maquina.find().sort({ ultimaAtualizacao: -1 }).limit(10);
-    res.json(maquinas);
+    if (patrimonio) {
+      const maquinas = await Maquina.find({
+        patrimonio: { $regex: `^${patrimonio}`, $options: 'i' },
+      }).limit(10);
+      return res.json(maquinas);
+    } else {
+      const maquinas = await Maquina.find().sort({ ultimaAtualizacao: -1 }).limit(10);
+      return res.json(maquinas);
+    }
   } catch (err) {
+    console.error("Erro ao buscar máquinas:", err);
     res.status(500).json({ erro: "Erro ao buscar máquinas." });
   }
 });
+
 
 // Rota para excluir máquina pelo ID
 app.delete("/maquinas/:id", async (req, res) => {
@@ -96,20 +107,6 @@ app.put("/maquinas/:id", async (req, res) => {
     res.status(500).json({ erro: "Erro ao atualizar máquina." });
   }
 });
-
-// Rota para buscar máquina por patrimônio
-app.get('/maquinas', async (req, res) => {
-  const { patrimonio } = req.query;
-  let query = {};
-
-  if (patrimonio) {
-    query.patrimonio = { $regex: `^${patrimonio}`, $options: 'i' };
-  }
-
-  const maquinas = await db.collection('maquinas').find(query).limit(10).toArray();
-  res.json(maquinas);
-});
-
 
 
 app.listen(PORT, () => {
