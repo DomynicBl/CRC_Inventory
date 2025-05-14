@@ -57,7 +57,7 @@ class MachineService {
     String prefix,
   ) async {
     final response = await http.get(
-      Uri.parse('$baseUrl/machines?patrimonio=$prefix'),
+      Uri.parse('$baseUrl?patrimonio=$prefix'),
     );
     final List data = jsonDecode(response.body);
     return data.cast<Map<String, dynamic>>();
