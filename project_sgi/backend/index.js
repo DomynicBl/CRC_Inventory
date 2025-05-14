@@ -51,7 +51,7 @@ app.post("/maquinas", async (req, res) => {
     res.status(500).json({ erro: "Erro ao salvar máquina." });
   }
 });
-s
+
 // Rota maquinas com verificação
 app.get("/maquinas", async (req, res) => {
   const { patrimonio } = req.query;
