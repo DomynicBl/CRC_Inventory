@@ -62,6 +62,19 @@ app.get("/maquinas", async (req, res) => {
   }
 });
 
+// Rota para excluir máquina pelo ID
+app.delete("/maquinas/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const excluida = await Maquina.findByIdAndDelete(id);
+    if (!excluida) return res.status(404).json({ erro: "Máquina não encontrada." });
+    res.json({ mensagem: "Máquina excluída com sucesso." });
+  } catch (err) {
+    res.status(500).json({ erro: "Erro ao excluir máquina." });
+  }
+});
+
+
 app.listen(PORT, () => {
   console.log(`🚀 Servidor rodando em http://localhost:${PORT}`);
 });

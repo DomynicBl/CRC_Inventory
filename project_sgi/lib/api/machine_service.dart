@@ -24,4 +24,15 @@ class MachineService {
     final List<dynamic> list = jsonDecode(resp.body);
     return list.cast<Map<String, dynamic>>();
   }
+
+  // Adicione este método à sua classe MachineService:
+  Future<void> deleteMachine(String id) async {
+    final resp = await http.delete(
+      Uri.parse('$baseUrl/$id'),
+      headers: {'Content-Type': 'application/json'},
+    );
+    if (resp.statusCode != 200) {
+      throw Exception('Erro ao excluir: ${resp.body}');
+    }
+  }
 }

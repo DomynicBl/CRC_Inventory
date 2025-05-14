@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import '../Machines/MachineForm.dart'; // import do formulario de cadastro de maquinas
+import '../Machines/MachineForm.dart'; // import do formulário de cadastro de máquinas
 
 /* IMPORTAÇÃO DE TELAS DA HOME */
 import '../Map/map_page.dart'; // importa tela do mapa
-import '../Scanner/barcode_scanner_page.dart'; // import da tela de Leitor de Código de Barras
-import 'profile_page.dart'; // importa tela de usuario
-import 'last_machines_list.dart'; // import da tela das ultimas maquinas adicionadas
+import '../Scanner/barcode_scanner_page.dart'; // import da tela de leitor de código de barras
+import 'profile_page.dart'; // importa tela de usuário
+import 'last_machines_list.dart'; // import da tela das últimas máquinas adicionadas
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -63,12 +63,11 @@ class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
 
   final List<String> _titles = [
-  'Painel de Inventário',
-  'Procurar',
-  'BarCode',
-  'Perfil',
-];
-
+    'Painel de Inventário',
+    'Procurar',
+    'BarCode',
+    'Perfil',
+  ];
 
   void _onTabSelected(int index) {
     setState(() {
@@ -76,20 +75,22 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  // Ação padrão do FAB (só na aba Home)
-  void _abrirFormulario() async {
-  await Navigator.push(
-    context,
-    MaterialPageRoute(builder: (context) => const MachineForm()),
-  );
-  setState(() {});
-}
-
+  // Abre o formulário e, ao retornar, forçar rebuild
+  void _abrirFormulario() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const MachineForm()),
+    ).then((_) {
+      if (_selectedIndex == 0) {
+        setState(() {});
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     final pages = <Widget>[
-      HomeContent(),        // sem const
+      HomeContent(),        // nova instância sempre
       MapScreen(),
       BarcodeScannerPage(),
       ProfileScreen(),
@@ -102,27 +103,23 @@ class _HomePageState extends State<HomePage> {
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         centerTitle: false,
-        actions:
-            _selectedIndex == 0
-                ? [
-                  IconButton(
-                    icon: const Icon(Icons.notifications_none),
-                    onPressed: () {
-                      // Ação para notificações
-                    },
-                  ),
-                ]
-                : null,
+        actions: _selectedIndex == 0
+            ? [
+                IconButton(
+                  icon: const Icon(Icons.notifications_none),
+                  onPressed: () {},
+                ),
+              ]
+            : null,
       ),
       body: pages[_selectedIndex],
-      floatingActionButton:
-          _selectedIndex == 0
-              ? FloatingActionButton(
-                onPressed: _abrirFormulario,
-                tooltip: 'Adicionar Máquina',
-                child: const Icon(Icons.add, size: 28),
-              )
-              : null,
+      floatingActionButton: _selectedIndex == 0
+          ? FloatingActionButton(
+              onPressed: _abrirFormulario,
+              tooltip: 'Adicionar Máquina',
+              child: const Icon(Icons.add, size: 28),
+            )
+          : null,
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: _onTabSelected,
@@ -142,7 +139,7 @@ class HomeContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const LastMachinesList();
+    return LastMachinesList(); // sem const para forçar rebuild
   }
 }
 
