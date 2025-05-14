@@ -53,13 +53,13 @@ class MachineService {
     }
   }
 
-  Future<Map<String, dynamic>> getByPatrimonio(String patrimonio) async {
-    final resp = await http.get(Uri.parse('$baseUrl/patrimonio/$patrimonio'));
-
-    if (resp.statusCode != 200) {
-      throw Exception('Máquina não encontrada: ${resp.body}');
-    }
-
-    return jsonDecode(resp.body);
+  Future<List<Map<String, dynamic>>> getByPatrimonioParcial(
+    String prefix,
+  ) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/machines?patrimonio=$prefix'),
+    );
+    final List data = jsonDecode(response.body);
+    return data.cast<Map<String, dynamic>>();
   }
 }

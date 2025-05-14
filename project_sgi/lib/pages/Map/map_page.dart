@@ -60,39 +60,53 @@ class _MapScreenState extends State<MapScreen> {
   }
 
   void _performSearch() async {
-    final patrimonio = _searchController.text.trim();
-    if (patrimonio.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Digite um número de patrimônio')),
-      );
-      return;
-    }
+  final patrimonio = _searchController.text.trim();
+  if (patrimonio.isEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Digite um número de patrimônio')),
+    );
+    return;
+  }
+
+  setState(() {
+    _isSearching = true;
+    _searchResult = 'Buscando...';
+  });
+
+  try {
+    final machineService = MachineService();
+    final machines = await machineService.getByPatrimonioParcial(patrimonio);
 
     setState(() {
-      _isSearching = true;
-      _searchResult = 'Buscando...';
+      if (machines.isNotEmpty) {
+        _searchResult = '';
+        _searchResultMachine = null;
+      } else {
+        _searchResult = 'Nenhum resultado para: $patrimonio';
+        _searchResultMachine = null;
+      }
     });
 
-    try {
-      final machineService = MachineService();
-      final machine = await machineService.getByPatrimonio(patrimonio);
-
-      setState(() {
-        if (machine != null) {
-          _searchResult = '';
-          _searchResultMachine = machine;
-        } else {
-          _searchResult = 'Nenhum resultado para: $patrimonio';
-          _searchResultMachine = null;
-        }
-      });
-    } catch (e) {
-      setState(() {
-        _searchResult = 'Erro: ${e.toString()}';
-        _searchResultMachine = null;
-      });
+    // Se você quiser exibir vários resultados:
+    if (machines.isNotEmpty) {
+      showModalBottomSheet(
+        context: context,
+        builder: (context) => ListView(
+          padding: const EdgeInsets.all(16),
+          children: machines
+              .map((m) => MachineCard(machine: m, onUpdate: _performSearch))
+              .toList(),
+        ),
+      );
     }
+  } catch (e) {
+    setState(() {
+      _searchResult = 'Erro: ${e.toString()}';
+      _searchResultMachine = null;
+    });
   }
+}
+
 
   void _resetSearch() {
     setState(() {

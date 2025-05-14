@@ -98,21 +98,15 @@ app.put("/maquinas/:id", async (req, res) => {
 });
 
 // Rota para buscar máquina por patrimônio
-app.get("/maquinas/patrimonio/:patrimonio", async (req, res) => {
-  try {
-    const patrimonio = req.params.patrimonio;
-    
-    const maquina = await Maquina.findOne({ patrimonio });
+app.get('/machines', async (req, res) => {
+  const prefix = req.query.patrimonio;
+  const results = await db.collection('machines')
+    .find({ patrimonio: { $regex: `^${prefix}` } }) // começa com
+    .toArray();
 
-    if (!maquina) {
-      return res.status(404).json({ erro: "Máquina não encontrada." });
-    }
-
-    res.json(maquina);
-  } catch (err) {
-    res.status(500).json({ erro: "Erro ao buscar máquina por patrimônio." });
-  }
+  res.json(results);
 });
+
 
 
 app.listen(PORT, () => {
