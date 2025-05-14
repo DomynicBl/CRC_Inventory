@@ -98,13 +98,16 @@ app.put("/maquinas/:id", async (req, res) => {
 });
 
 // Rota para buscar máquina por patrimônio
-app.get('/machines', async (req, res) => {
-  const prefix = req.query.patrimonio;
-  const results = await db.collection('machines')
-    .find({ patrimonio: { $regex: `^${prefix}` } }) // começa com
-    .toArray();
+app.get('/maquinas', async (req, res) => {
+  const { patrimonio } = req.query;
+  let query = {};
 
-  res.json(results);
+  if (patrimonio) {
+    query.patrimonio = { $regex: `^${patrimonio}`, $options: 'i' };
+  }
+
+  const maquinas = await db.collection('maquinas').find(query).limit(10).toArray();
+  res.json(maquinas);
 });
 
 

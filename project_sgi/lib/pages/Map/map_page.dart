@@ -5,6 +5,7 @@ import 'package:flutter/services.dart' show rootBundle;
 import '../../class/markers.dart';
 import '../../api/machine_service.dart';
 import '../cards/machine_card.dart';
+import 'search_result_screen.dart';
 
 class MapScreen extends StatefulWidget {
   const MapScreen({Key? key}) : super(key: key);
@@ -60,53 +61,55 @@ class _MapScreenState extends State<MapScreen> {
   }
 
   void _performSearch() async {
-  final patrimonio = _searchController.text.trim();
-  if (patrimonio.isEmpty) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Digite um número de patrimônio')),
-    );
-    return;
-  }
-
-  setState(() {
-    _isSearching = true;
-    _searchResult = 'Buscando...';
-  });
-
-  try {
-    final machineService = MachineService();
-    final machines = await machineService.getByPatrimonioParcial(patrimonio);
-
-    setState(() {
-      if (machines.isNotEmpty) {
-        _searchResult = '';
-        _searchResultMachine = null;
-      } else {
-        _searchResult = 'Nenhum resultado para: $patrimonio';
-        _searchResultMachine = null;
-      }
-    });
-
-    // Se você quiser exibir vários resultados:
-    if (machines.isNotEmpty) {
-      showModalBottomSheet(
-        context: context,
-        builder: (context) => ListView(
-          padding: const EdgeInsets.all(16),
-          children: machines
-              .map((m) => MachineCard(machine: m, onUpdate: _performSearch))
-              .toList(),
-        ),
+    final patrimonio = _searchController.text.trim();
+    if (patrimonio.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Digite um número de patrimônio')),
       );
+      return;
     }
-  } catch (e) {
-    setState(() {
-      _searchResult = 'Erro: ${e.toString()}';
-      _searchResultMachine = null;
-    });
-  }
-}
 
+    setState(() {
+      _isSearching = true;
+      _searchResult = 'Buscando...';
+    });
+
+    try {
+      final machineService = MachineService();
+      final machines = await machineService.getByPatrimonioParcial(patrimonio);
+
+      setState(() {
+        if (machines.isNotEmpty) {
+          _searchResult = '';
+          _searchResultMachine = null;
+        } else {
+          _searchResult = 'Nenhum resultado para: $patrimonio';
+          _searchResultMachine = null;
+        }
+      });
+
+      if (machines.isNotEmpty) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder:
+                (context) => SearchResultScreen(
+                  machines: machines,
+                  searchTerm: patrimonio,
+                  onBack: () {
+                    Navigator.pop(context);
+                  },
+                ),
+          ),
+        );
+      }
+    } catch (e) {
+      setState(() {
+        _searchResult = 'Erro: ${e.toString()}';
+        _searchResultMachine = null;
+      });
+    }
+  }
 
   void _resetSearch() {
     setState(() {
