@@ -62,14 +62,6 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
 
-  // Lista de páginas para cada aba
-  static final List<Widget> _pages = <Widget>[
-    const HomeContent(),
-    const MapScreen(),
-    const BarcodeScannerPage(),
-    const ProfileScreen(),
-  ];
-
   final List<String> _titles = [
   'Painel de Inventário',
   'Procurar',
@@ -96,6 +88,13 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final pages = <Widget>[
+      HomeContent(),        // sem const
+      MapScreen(),
+      BarcodeScannerPage(),
+      ProfileScreen(),
+    ];
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -115,7 +114,7 @@ class _HomePageState extends State<HomePage> {
                 ]
                 : null,
       ),
-      body: _pages[_selectedIndex],
+      body: pages[_selectedIndex],
       floatingActionButton:
           _selectedIndex == 0
               ? FloatingActionButton(
