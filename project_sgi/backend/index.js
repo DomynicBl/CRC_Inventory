@@ -26,10 +26,18 @@ mongoose.connect(MONGO_URI, {
 const maquinaSchema = new mongoose.Schema({
   nome: String,
   patrimonio: String,
-  setor: String,
-  status: String,
+  predio: String,
+  sala: String,
+  monitor: String,
+  modelo: String,
+  processador: String,
+  memoria: String,
+  problema: String,
+  observacoes: String,
+  dataCadastro: { type: Date, default: Date.now },
   ultimaAtualizacao: { type: Date, default: Date.now }
 });
+
 
 const Maquina = mongoose.model("Maquina", maquinaSchema);
 

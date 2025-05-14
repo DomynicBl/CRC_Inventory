@@ -24,7 +24,7 @@ class LastMachinesList extends StatelessWidget {
           itemCount: machines.length,
           itemBuilder: (_, i) {
             final m = machines[i];
-            final data = DateTime.parse(m['dataCadastro']);
+            final data = DateTime.parse(m['ultimaAtualizacao']);
             final dateStr = '${data.day}/${data.month}/${data.year}';
             return Card(
               margin: const EdgeInsets.only(bottom: 12),

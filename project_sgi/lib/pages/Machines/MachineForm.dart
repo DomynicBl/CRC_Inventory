@@ -184,7 +184,7 @@ class _MachineFormState extends State<MachineForm> {
       'memoria': memoryValue ?? '',
       'problema': problemaController.text,
       'observacoes': observacaoController.text,
-      'dataCadastro': DateTime.now().toIso8601String(),
+      'ultimaAtualizacao': DateTime.now().toIso8601String(),
     };
   }
 }
