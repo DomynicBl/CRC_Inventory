@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:flutter/services.dart' show rootBundle;
 
-import 'markers.dart';
+import '../../class/markers.dart';
+import '../../api/machine_service.dart';
+import '../cards/machine_card.dart';
 
 class MapScreen extends StatefulWidget {
   const MapScreen({Key? key}) : super(key: key);
@@ -12,6 +14,8 @@ class MapScreen extends StatefulWidget {
 }
 
 class _MapScreenState extends State<MapScreen> {
+  Map<String, dynamic>? _searchResultMachine;
+
   late Future<List<MapMarker>> markerList;
   late Future<Size> imageSize;
   final TransformationController _transformationController =
@@ -55,8 +59,9 @@ class _MapScreenState extends State<MapScreen> {
     return Size(image.width.toDouble(), image.height.toDouble());
   }
 
-  void _performSearch() {
-    if (_searchController.text.isEmpty) {
+  void _performSearch() async {
+    final patrimonio = _searchController.text.trim();
+    if (patrimonio.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Digite um número de patrimônio')),
       );
@@ -65,8 +70,28 @@ class _MapScreenState extends State<MapScreen> {
 
     setState(() {
       _isSearching = true;
-      _searchResult = 'Resultado para patrimônio: ${_searchController.text}';
+      _searchResult = 'Buscando...';
     });
+
+    try {
+      final machineService = MachineService();
+      final machine = await machineService.getByPatrimonio(patrimonio);
+
+      setState(() {
+        if (machine != null) {
+          _searchResult = '';
+          _searchResultMachine = machine;
+        } else {
+          _searchResult = 'Nenhum resultado para: $patrimonio';
+          _searchResultMachine = null;
+        }
+      });
+    } catch (e) {
+      setState(() {
+        _searchResult = 'Erro: ${e.toString()}';
+        _searchResultMachine = null;
+      });
+    }
   }
 
   void _resetSearch() {
@@ -79,7 +104,6 @@ class _MapScreenState extends State<MapScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-
       // Barra de pesquisa
       appBar: AppBar(
         title: Padding(
@@ -185,7 +209,7 @@ class _MapScreenState extends State<MapScreen> {
   Widget _buildSearchResult() {
     return Column(
       children: [
-        const SizedBox(height: 16), // aproxima da barra de busca
+        const SizedBox(height: 16),
         ElevatedButton.icon(
           onPressed: _resetSearch,
           icon: const Icon(Icons.map),
@@ -195,16 +219,33 @@ class _MapScreenState extends State<MapScreen> {
           ),
         ),
         const SizedBox(height: 16),
-        Center(
-          child: Card(
-            elevation: 3,
-            margin: const EdgeInsets.symmetric(horizontal: 32),
-            child: Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Text(_searchResult, style: const TextStyle(fontSize: 18)),
+        if (_searchResult.isNotEmpty)
+          Center(
+            child: Card(
+              elevation: 3,
+              margin: const EdgeInsets.symmetric(horizontal: 32),
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Text(
+                  _searchResult,
+                  style: const TextStyle(fontSize: 18),
+                ),
+              ),
             ),
           ),
-        ),
+        if (_searchResultMachine != null)
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: MachineCard(
+              machine: _searchResultMachine!,
+              onUpdate: () {
+                setState(() {
+                  _searchResultMachine = null;
+                  _isSearching = false;
+                });
+              },
+            ),
+          ),
       ],
     );
   }

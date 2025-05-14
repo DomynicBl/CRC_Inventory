@@ -139,7 +139,7 @@ class HomeContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return LastMachinesList(); // sem const para forçar rebuild
+    return LastMachineList();
   }
 }
 
