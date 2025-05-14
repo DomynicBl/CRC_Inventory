@@ -35,4 +35,16 @@ class MachineService {
       throw Exception('Erro ao excluir: ${resp.body}');
     }
   }
+
+    /// Atualiza a máquina com o ID passado
+  Future<void> updateMachine(String id, Map<String, dynamic> data) async {
+    final resp = await http.put(
+      Uri.parse('$baseUrl/$id'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode(data),
+    );
+    if (resp.statusCode != 200) {
+      throw Exception('Erro ao atualizar: ${resp.body}');
+    }
+  }
 }

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../Machines/MachineForm.dart'; // import do formulário de cadastro de máquinas
+import '../Machines/machine_form.dart'; // import do formulário de cadastro de máquinas
 
 /* IMPORTAÇÃO DE TELAS DA HOME */
 import '../Map/map_page.dart'; // importa tela do mapa

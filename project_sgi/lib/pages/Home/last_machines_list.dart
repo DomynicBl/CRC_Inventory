@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:project_sgi/api/machine_service.dart';
 
+import '../Machines/edit_machine_form.dart.dart';
+
 class LastMachinesList extends StatefulWidget {
   const LastMachinesList({super.key});
   @override
@@ -44,61 +46,78 @@ class _LastMachinesListState extends State<LastMachinesList> {
             final data = DateTime.parse(m['ultimaAtualizacao']);
             final dateStr = '${data.day}/${data.month}/${data.year}';
 
-            return Card(
-              margin: const EdgeInsets.only(bottom: 12),
-              child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    // Linha com título + ícone de exclusão
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: Text(
-                            m['nome'] ?? '',
-                            style: const TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.bold),
+            return InkWell(
+              onTap: () async {
+                final updated = await Navigator.push<bool>(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => EditMachineForm(machine: m),
+                  ),
+                );
+                if (updated == true) setState(() => _reload());
+              },
+              child: Card(
+                margin: const EdgeInsets.only(bottom: 12),
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      // Linha com título + ícone de exclusão
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              m['nome'] ?? '',
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                           ),
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.delete, color: Colors.red),
-                          onPressed: () async {
-                            try {
-                              await MachineService().deleteMachine(id);
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Máquina excluída com sucesso!'),
-                                ),
-                              );
-                              setState(() {
-                                _reload();
-                              });
-                            } catch (e) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('Erro ao excluir: $e')),
-                              );
-                            }
-                          },
-                        ),
-                      ],
-                    ),
-
-                    // Subtítulo (patrimônio)
-                    Text('Patrimônio: ${m['patrimonio'] ?? ''}'),
-
-                    const SizedBox(height: 8),
-
-                    // Data no canto inferior esquerdo
-                    Align(
-                      alignment: Alignment.bottomLeft,
-                      child: Text(
-                        dateStr,
-                        style: const TextStyle(color: Colors.grey),
+                          IconButton(
+                            icon: const Icon(Icons.delete, color: Colors.red),
+                            onPressed: () async {
+                              try {
+                                await MachineService().deleteMachine(id);
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                      'Máquina excluída com sucesso!',
+                                    ),
+                                  ),
+                                );
+                                setState(() {
+                                  _reload();
+                                });
+                              } catch (e) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('Erro ao excluir: $e'),
+                                  ),
+                                );
+                              }
+                            },
+                          ),
+                        ],
                       ),
-                    ),
-                  ],
+
+                      // Subtítulo (patrimônio)
+                      Text('Patrimônio: ${m['patrimonio'] ?? ''}'),
+
+                      const SizedBox(height: 8),
+
+                      // Data no canto inferior esquerdo
+                      Align(
+                        alignment: Alignment.bottomLeft,
+                        child: Text(
+                          dateStr,
+                          style: const TextStyle(color: Colors.grey),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             );

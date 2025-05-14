@@ -74,6 +74,29 @@ app.delete("/maquinas/:id", async (req, res) => {
   }
 });
 
+// Rota para atualizar máquina pelo ID
+app.put("/maquinas/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    // req.body já traz o JSON com os campos atualizados
+    const atualizada = await Maquina.findByIdAndUpdate(
+      id,
+      { 
+        ...req.body,
+        ultimaAtualizacao: Date.now() 
+      },
+      { new: true } // retorna o documento já modificado
+    );
+    if (!atualizada) {
+      return res.status(404).json({ erro: "Máquina não encontrada." });
+    }
+    res.json(atualizada);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ erro: "Erro ao atualizar máquina." });
+  }
+});
+
 
 app.listen(PORT, () => {
   console.log(`🚀 Servidor rodando em http://localhost:${PORT}`);
