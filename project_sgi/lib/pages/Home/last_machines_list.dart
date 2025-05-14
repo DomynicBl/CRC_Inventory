@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:project_sgi/api/machine_service.dart';
 
-import '../Machines/edit_machine_form.dart.dart';
+import '../Machines/edit_machine_form.dart';
 
 class LastMachinesList extends StatefulWidget {
   const LastMachinesList({super.key});
@@ -48,14 +48,24 @@ class _LastMachinesListState extends State<LastMachinesList> {
 
             return InkWell(
               onTap: () async {
-                final updated = await Navigator.push<bool>(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => EditMachineForm(machine: m),
-                  ),
-                );
-                if (updated == true) setState(() => _reload());
+                try {
+                  final updated = await Navigator.push<bool>(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => EditMachineForm(machine: m),
+                    ),
+                  );
+                  if (updated == true) {
+                    setState(() {
+                      _reload();
+                    });
+                  }
+                } catch (e, st) {
+                  // se der algum erro não-visto, a gente mostra no console
+                  debugPrint('Erro ao abrir edição: $e\n$st');
+                }
               },
+
               child: Card(
                 margin: const EdgeInsets.only(bottom: 12),
                 child: Padding(

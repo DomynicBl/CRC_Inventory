@@ -36,15 +36,20 @@ class MachineService {
     }
   }
 
-    /// Atualiza a máquina com o ID passado
+  /// Atualiza a máquina com o ID passado
   Future<void> updateMachine(String id, Map<String, dynamic> data) async {
-    final resp = await http.put(
-      Uri.parse('$baseUrl/$id'),
-      headers: {'Content-Type': 'application/json'},
+    final uri = Uri.parse('$baseUrl/$id');
+    final response = await http.put(
+      uri,
       body: jsonEncode(data),
+      headers: {'Content-Type': 'application/json'},
     );
-    if (resp.statusCode != 200) {
-      throw Exception('Erro ao atualizar: ${resp.body}');
+
+    print('Status code: ${response.statusCode}');
+    print('Body: ${response.body}');
+
+    if (response.statusCode != 200) {
+      throw Exception('Erro ao atualizar máquina: ${response.body}');
     }
   }
 }

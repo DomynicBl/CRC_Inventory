@@ -25,16 +25,16 @@ class _EditMachineFormState extends State<EditMachineForm> {
   void initState() {
     super.initState();
     final m = widget.machine;
-    nomeController        = TextEditingController(text: m['nome']);
-    patrimonioController  = TextEditingController(text: m['patrimonio']);
-    predioController      = TextEditingController(text: m['predio']);
-    salaController        = TextEditingController(text: m['sala']);
-    monitorController     = TextEditingController(text: m['monitor']);
-    modeloController      = TextEditingController(text: m['modelo']);
+    nomeController = TextEditingController(text: m['nome']);
+    patrimonioController = TextEditingController(text: m['patrimonio']);
+    predioController = TextEditingController(text: m['predio']);
+    salaController = TextEditingController(text: m['sala']);
+    monitorController = TextEditingController(text: m['monitor']);
+    modeloController = TextEditingController(text: m['modelo']);
     processadorController = TextEditingController(text: m['processador']);
-    memoryValue           = m['memoria'];
-    problemaController    = TextEditingController(text: m['problema']);
-    observacaoController  = TextEditingController(text: m['observacoes']);
+    memoryValue = m['memoria'];
+    problemaController = TextEditingController(text: m['problema']);
+    observacaoController = TextEditingController(text: m['observacoes']);
   }
 
   @override
@@ -56,7 +56,7 @@ class _EditMachineFormState extends State<EditMachineForm> {
             buildTextField('Monitor', monitorController),
             buildTextField('Modelo', modeloController),
             buildTextField('Processador', processadorController),
-            buildDropdown(['4GB','6GB','8GB','16GB','32GB']),
+            buildDropdown(['4GB', '6GB', '8GB', '16GB', '32GB']),
             buildTextField('Problema (se houver)', problemaController),
             buildTextField('Observações / Justificativa', observacaoController),
             const SizedBox(height: 24),
@@ -75,13 +75,28 @@ class _EditMachineFormState extends State<EditMachineForm> {
                   'observacoes': observacaoController.text,
                   'ultimaAtualizacao': DateTime.now().toIso8601String(),
                 };
-                await MachineService()
-                  .updateMachine(widget.machine['_id'], data);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Máquina alterada com sucesso!'))
-                );
-                Navigator.pop(context, true);
+
+                try {
+                  await MachineService().updateMachine(
+                    widget.machine['_id'],
+                    data,
+                  );
+
+                  if (!mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Máquina alterada com sucesso!'),
+                    ),
+                  );
+                  Navigator.pop(context, true);
+                } catch (e) {
+                  if (!mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Erro ao alterar: $e')),
+                  );
+                }
               },
+
               child: const Text('Alterar'),
             ),
           ],
@@ -96,7 +111,9 @@ class _EditMachineFormState extends State<EditMachineForm> {
       child: TextField(
         controller: ctl,
         decoration: InputDecoration(
-          labelText: label, filled: true, fillColor: Colors.white,
+          labelText: label,
+          filled: true,
+          fillColor: Colors.white,
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
         ),
       ),
@@ -108,13 +125,15 @@ class _EditMachineFormState extends State<EditMachineForm> {
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: DropdownButtonFormField<String>(
         value: memoryValue,
-        items: items.map((v) =>
-          DropdownMenuItem(value: v, child: Text(v))
-        ).toList(),
+        items:
+            items
+                .map((v) => DropdownMenuItem(value: v, child: Text(v)))
+                .toList(),
         onChanged: (v) => setState(() => memoryValue = v),
         decoration: InputDecoration(
           labelText: 'Selecione a memória',
-          filled: true, fillColor: Colors.white,
+          filled: true,
+          fillColor: Colors.white,
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
         ),
       ),
