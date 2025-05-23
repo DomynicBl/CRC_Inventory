@@ -17,9 +17,9 @@ mongoose.connect(MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 }).then(() => {
-  console.log("✅ Conectado ao MongoDB Atlas");
+  console.log("Conectado ao MongoDB Atlas");
 }).catch((err) => {
-  console.error("❌ Erro ao conectar no MongoDB:", err);
+  console.error("Erro ao conectar no MongoDB:", err);
 });
 
 // Schema para máquina
@@ -110,5 +110,5 @@ app.put("/maquinas/:id", async (req, res) => {
 
 
 app.listen(PORT, () => {
-  console.log(`🚀 Servidor rodando em http://localhost:${PORT}`);
+  console.log(`Servidor rodando em http://localhost:${PORT}`);
 });

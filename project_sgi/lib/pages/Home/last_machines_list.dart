@@ -39,9 +39,9 @@ class _LastMachineListState extends State<LastMachineList> {
     return ListView.builder(
       itemCount: machines.length,
       itemBuilder: (context, index) {
-        return MachineCard(
-          machine: machines[index],
-          onUpdate: _load,
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(12, 6, 12, 6),
+          child: MachineCard(machine: machines[index], onUpdate: _load),
         );
       },
     );

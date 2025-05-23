@@ -1,7 +1,7 @@
 import 'package:project_sgi/api/machine_service.dart';
-
 import 'package:flutter/material.dart';
-//import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
+// Importe a nova página de scanner
+import 'barcode_scanner_return_page.dart'; // <<< VERIFIQUE ESTE CAMINHO
 
 class MachineForm extends StatefulWidget {
   const MachineForm({super.key});
@@ -13,7 +13,7 @@ class MachineForm extends StatefulWidget {
 
 class _MachineFormState extends State<MachineForm> {
   String? memoryValue;
-  String ticket = 'Não Validado'; // Define the ticket variable
+  String ticket = 'Não Validado';
 
   final TextEditingController nomeController = TextEditingController();
   final TextEditingController patrimonioController = TextEditingController();
@@ -24,6 +24,31 @@ class _MachineFormState extends State<MachineForm> {
   final TextEditingController processadorController = TextEditingController();
   final TextEditingController problemaController = TextEditingController();
   final TextEditingController observacaoController = TextEditingController();
+
+  // --- NOVA FUNÇÃO PARA ESCANEAR ---
+  Future<void> _scanBarcode() async {
+    try {
+      // Navega para a página do scanner e espera o resultado
+      final String? barcodeValue = await Navigator.push<String>(
+        context,
+        MaterialPageRoute(builder: (context) => const BarcodeScannerReturnPage()),
+      );
+
+      // Se um valor foi retornado (ou seja, o usuário não apenas voltou),
+      // atualiza o campo de patrimônio.
+      if (barcodeValue != null && barcodeValue.isNotEmpty) {
+        setState(() {
+          patrimonioController.text = barcodeValue;
+        });
+      }
+    } catch (e) {
+      // Mostra um erro se algo der errado (ex: permissão da câmera negada)
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erro ao escanear: ${e.toString()}')),
+      );
+    }
+  }
+  // --- FIM DA NOVA FUNÇÃO ---
 
   @override
   Widget build(BuildContext context) {
@@ -50,16 +75,27 @@ class _MachineFormState extends State<MachineForm> {
                 ),
                 const SizedBox(width: 12),
                 ElevatedButton(
-                  onPressed: () {
-                    debugPrint('Escanear patrimônio...');
-                  },
+                  // --- ATUALIZA O onPressed ---
+                  onPressed: _scanBarcode, // Chama a função de escaneamento
+                  // --- FIM DA ATUALIZAÇÃO ---
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF0066FF),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15), // Ajuste de padding
+                    shape: RoundedRectangleBorder( // Borda arredondada
+                        borderRadius: BorderRadius.circular(10),
+                    ),
                   ),
-                  child: const Text(
-                    'Escanear',
-                    style: TextStyle(color: Colors.white),
-                  ),
+                  child: const Row( // Adiciona ícone
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                       Icon(Icons.qr_code_scanner, color: Colors.white),
+                       SizedBox(width: 8),
+                       Text(
+                        'Escanear',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ],
+                  )
                 ),
               ],
             ),
@@ -69,20 +105,23 @@ class _MachineFormState extends State<MachineForm> {
             buildTextField('Monitor', monitorController),
             buildTextField('Modelo', modeloController),
             buildTextField('Processador', processadorController),
-
             const SizedBox(height: 12),
             buildDropdown(['4GB', '6GB', '8GB', '16GB', '32GB']),
-
             buildTextField('Problema (se houver)', problemaController),
             buildTextField('Observações / Justificativa', observacaoController),
-
             const SizedBox(height: 16),
             Center(
-              child: ElevatedButton(
+              child: ElevatedButton.icon( // Adiciona ícone
                 onPressed: () {
                   print('Registrar foto...');
+                  // Aqui você implementaria a lógica da câmera
                 },
-                style: ElevatedButton.styleFrom(
+                icon: const Icon(Icons.camera_alt, color: Colors.white),
+                label: const Text(
+                  'Registrar Foto',
+                  style: TextStyle(color: Colors.white),
+                ),
+                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF0066FF),
                   padding: const EdgeInsets.symmetric(
                     horizontal: 24,
@@ -92,33 +131,39 @@ class _MachineFormState extends State<MachineForm> {
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
-                child: const Text(
-                  'Registrar Foto',
-                  style: TextStyle(color: Colors.white),
-                ),
               ),
             ),
-
             const SizedBox(height: 24),
             Center(
-              // BOTAO DE ENVIO
-              child: ElevatedButton(
+              child: ElevatedButton.icon( // Adiciona ícone
                 onPressed: () async {
                   final dados = _criarMaquinaComoMapa();
-
-                  await MachineService().addMachine(dados);
-
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Máquina cadastrada com sucesso!'),
-                    ),
-                  );
-
-                  // ⬅️ Volta para a HomePage
-                  Navigator.pop(context);
+                  try {
+                     await MachineService().addMachine(dados);
+                     ScaffoldMessenger.of(context).showSnackBar(
+                       const SnackBar(
+                         content: Text('Máquina cadastrada com sucesso!'),
+                         backgroundColor: Color(0xFF002238), // Feedback visual
+                       ),
+                     );
+                     Navigator.pop(context, true); // Retorna true para indicar sucesso
+                  } catch (e) {
+                     ScaffoldMessenger.of(context).showSnackBar(
+                       SnackBar(
+                         content: Text('Erro ao cadastrar: ${e.toString()}'),
+                         backgroundColor: Colors.red, // Feedback visual
+                       ),
+                     );
+                  }
                 },
-
-                child: Text('Enviar'),
+                icon: const Icon(Icons.send, color: Colors.white),
+                label: const Text('Enviar Cadastro'),
+                style: ElevatedButton.styleFrom(
+                   backgroundColor: Color(0xFF002238), 
+                   foregroundColor: Colors.white,
+                   padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 15),
+                   textStyle: const TextStyle(fontSize: 16),
+                ),
               ),
             ),
           ],
@@ -156,13 +201,12 @@ class _MachineFormState extends State<MachineForm> {
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
         ),
         iconEnabledColor: Colors.black,
-        items:
-            items.map((item) {
-              return DropdownMenuItem<String>(
-                value: item,
-                child: Text(item, style: const TextStyle(color: Colors.black)),
-              );
-            }).toList(),
+        items: items.map((item) {
+          return DropdownMenuItem<String>(
+            value: item,
+            child: Text(item, style: const TextStyle(color: Colors.black)),
+          );
+        }).toList(),
         onChanged: (value) {
           setState(() {
             memoryValue = value;

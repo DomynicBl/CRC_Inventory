@@ -90,7 +90,7 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     final pages = <Widget>[
-      HomeContent(),        // nova instância sempre
+      HomeContent(), // nova instância sempre
       MapScreen(),
       BarcodeScannerPage(),
       ProfileScreen(),
@@ -103,30 +103,37 @@ class _HomePageState extends State<HomePage> {
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         centerTitle: false,
-        actions: _selectedIndex == 0
-            ? [
-                IconButton(
-                  icon: const Icon(Icons.notifications_none),
-                  onPressed: () {},
-                ),
-              ]
-            : null,
+        actions:
+            _selectedIndex == 0
+                ? [
+                  IconButton(
+                    icon: const Icon(Icons.notifications_none),
+                    onPressed: () {},
+                  ),
+                ]
+                : null,
       ),
       body: pages[_selectedIndex],
-      floatingActionButton: _selectedIndex == 0
-          ? FloatingActionButton(
-              onPressed: _abrirFormulario,
-              tooltip: 'Adicionar Máquina',
-              child: const Icon(Icons.add, size: 28),
-            )
-          : null,
+      floatingActionButton:
+          _selectedIndex == 0
+              ? FloatingActionButton(
+                onPressed: _abrirFormulario,
+                tooltip: 'Adicionar Máquina',
+                backgroundColor: const Color.fromARGB(255, 199, 232, 255),
+                foregroundColor: const Color(0xFF002238),
+                child: const Icon(Icons.add, size: 28),
+              )
+              : null,
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: _onTabSelected,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Início'),
           BottomNavigationBarItem(icon: Icon(Icons.map), label: 'Mapa'),
-          BottomNavigationBarItem(icon: Icon(Icons.barcode_reader), label: 'Pesquisa'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.barcode_reader),
+            label: 'Pesquisa',
+          ),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Perfil'),
         ],
       ),
