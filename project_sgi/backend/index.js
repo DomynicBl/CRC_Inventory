@@ -2,6 +2,7 @@ import express from "express";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import cors from "cors";
+import { createClient } from '@supabase/supabase-js';
 
 dotenv.config();
 
@@ -11,6 +12,15 @@ app.use(express.json());
 
 const PORT = process.env.PORT || 3000;
 const MONGO_URI = process.env.MONGODB_URI;
+
+// --- CONFIGURAÇÃO SUPABASE ---
+const SUPABASE_URL = process.env.SUPABASE_URL; // <<< Adicione no seu .env
+const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY; // <<< Adicione no seu .env (USE A SERVICE_ROLE KEY!)
+if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
+    console.warn("Variáveis de ambiente do Supabase não configuradas. A exclusão de fotos não funcionará.");
+}
+const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
+// --- FIM CONFIGURAÇÃO SUPABASE ---
 
 // Conectar ao MongoDB Atlas
 mongoose.connect(MONGO_URI, {
@@ -34,6 +44,7 @@ const maquinaSchema = new mongoose.Schema({
   memoria: String,
   problema: String,
   observacoes: String,
+  fotoUrl: String,
   dataCadastro: { type: Date, default: Date.now },
   ultimaAtualizacao: { type: Date, default: Date.now }
 });
@@ -77,10 +88,46 @@ app.get("/maquinas", async (req, res) => {
 app.delete("/maquinas/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    const excluida = await Maquina.findByIdAndDelete(id);
-    if (!excluida) return res.status(404).json({ erro: "Máquina não encontrada." });
+
+    // 1. Encontre a máquina PRIMEIRO para pegar a URL da foto
+    const maquina = await Maquina.findById(id);
+
+    if (!maquina) {
+      return res.status(404).json({ erro: "Máquina não encontrada." });
+    }
+
+    // 2. Se tiver fotoUrl, tente deletar do Supabase
+    if (maquina.fotoUrl && supabase) { // Verifica se tem URL e se supabase está config.
+      try {
+        // Extrai o nome/caminho do arquivo da URL
+        const urlParts = maquina.fotoUrl.split('/fotos-maquinas/');
+        if (urlParts.length > 1) {
+          const filePath = decodeURIComponent(urlParts[1]); // Decodifica caso tenha caracteres especiais
+          console.log(`Tentando deletar do Supabase: ${filePath}`);
+
+          const { error: deleteError } = await supabase.storage
+            .from('fotos-maquinas') // Nome do seu bucket
+            .remove([filePath]);
+
+          if (deleteError) {
+            // Loga o erro mas continua para deletar do Mongo
+            console.error("Erro ao deletar foto do Supabase:", deleteError.message);
+          } else {
+            console.log("Foto deletada do Supabase com sucesso.");
+          }
+        }
+      } catch (supabaseErr) {
+        console.error("Erro geral ao processar deleção do Supabase:", supabaseErr);
+      }
+    }
+
+    // 3. Delete do MongoDB
+    await Maquina.findByIdAndDelete(id);
+
     res.json({ mensagem: "Máquina excluída com sucesso." });
+
   } catch (err) {
+    console.error("Erro geral ao excluir máquina:", err);
     res.status(500).json({ erro: "Erro ao excluir máquina." });
   }
 });

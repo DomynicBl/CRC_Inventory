@@ -1,7 +1,16 @@
 import 'package:flutter/material.dart';
 import 'pages/Login/login_screen.dart';
 
-void main() {
+// Banco de imagens
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await Supabase.initialize(
+    url: 'SUA_SUPABASE_URL',
+    anonKey: 'SUA_SUPABASE_ANON_KEY',
+  );
   runApp(const SGLApp());
 }
 
