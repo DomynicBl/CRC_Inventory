@@ -1,15 +1,15 @@
 /* SERVICOS */
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:project_sgi/api/auth_service.dart'; // Importa o nosso novo serviço
+import 'package:shared_preferences/shared_preferences.dart'; // Para lembrar que o app foi desbloqueado
 
 /* PAGINAS */
 import 'package:project_sgi/pages/Login/project_infos.dart';
-import 'package:project_sgi/pages/Login/create_screen.dart';
 import 'package:project_sgi/pages/Home/home_screen.dart';
 
 /* CLASSE PRINCIPAL */
 class LoginScreen extends StatefulWidget {
-  // Alterado para StatefulWidget
   const LoginScreen({super.key});
 
   @override
@@ -17,61 +17,67 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  /* PROPORCOES */
-  final double _logoHeightRatio = 0.2; // 20% da altura da tela
-  final double _bottomMarginRatio = 0.05; // 5% da altura da tela
-  /* PARA ENVIAR COM ENTER */
-  late FocusNode _emailFocusNode;
-  late FocusNode _passwordFocusNode;
-  /* PARA NAO APAGAR FORMULARIO */
-  late TextEditingController _emailController;
+  // Instancia o serviço de API
+  final AuthService _apiService = AuthService();
+  
+  // Controladores e Proporções
+  final double _logoHeightRatio = 0.2;
+  final double _bottomMarginRatio = 0.05;
   late TextEditingController _passwordController;
+  bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
-    _emailFocusNode = FocusNode();
-    _passwordFocusNode = FocusNode();
-    _emailController = TextEditingController();
     _passwordController = TextEditingController();
   }
 
   @override
   void dispose() {
-    _emailFocusNode.dispose();
-    _passwordFocusNode.dispose();
-    _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
 
-  /// Mensagem para quando o login for invalido
-  void _mostrarErro(BuildContext context, String mensagem) {
-    showDialog(
-      context: context,
-      builder:
-          (context) => AlertDialog(
-            title: const Text("Erro de Login"),
-            content: Text(mensagem),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: const Text("Fechar"),
-              ),
-            ],
-          ),
+  /// Mostra um pop-up de erro simples
+  void _mostrarErro(String mensagem) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(mensagem),
+        backgroundColor: Colors.redAccent,
+      ),
     );
   }
 
-  /// Realiza login (Apenas em teste)
-  void _efetuarLogin(BuildContext context, String usuario, String senha) {
-    if (usuario == 'teste' && senha == '123') {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => MyApp()),
-      );
-    } else {
-      _mostrarErro(context, "Usuário ou senha incorretos");
+  /// Verifica a senha mestra com o backend
+  Future<void> _verificarSenhaMestra() async {
+    if (_isLoading || _passwordController.text.isEmpty) {
+      return; // Não faz nada se já estiver carregando ou se o campo estiver vazio
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    final bool isPasswordCorrect = await _apiService.verifyMasterPassword(_passwordController.text);
+
+    if (mounted) { // Verifica se o widget ainda está na tela antes de atualizar o estado
+      setState(() {
+        _isLoading = false;
+      });
+
+      if (isPasswordCorrect) {
+        // Salva que o app foi desbloqueado
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setBool('is_authenticated', true);
+
+        // Navega para a HomeScreen
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => HomePage()),
+        );
+      } else {
+        _mostrarErro("Senha mestra incorreta.");
+      }
     }
   }
 
@@ -98,7 +104,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
             ),
-
             // Logo
             Container(
               height: screenHeight * _logoHeightRatio,
@@ -108,17 +113,12 @@ class _LoginScreenState extends State<LoginScreen> {
                 fit: BoxFit.contain,
               ),
             ),
-
-            // Seção de Login
+            // Seção de Login (agora Senha Mestra)
             Expanded(
               child: Container(
                 width: MediaQuery.of(context).size.width * 0.8,
                 margin: const EdgeInsets.only(top: 20),
-                child: _buildLoginForm(
-                  context,
-                  _emailController,
-                  _passwordController,
-                ),
+                child: _buildMasterPasswordForm(context, _passwordController),
               ),
             ),
           ],
@@ -127,47 +127,19 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  Widget _buildLoginForm(
+  Widget _buildMasterPasswordForm(
     BuildContext context,
-    TextEditingController emailController,
     TextEditingController passwordController,
   ) {
     return Column(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      mainAxisAlignment: MainAxisAlignment.center, // Centraliza o conteúdo verticalmente
       children: [
-        // Campo Usuário
+        // Campo Senha Mestra
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              "Usuário",
-              style: TextStyle(
-                fontSize: 20,
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 8),
-            TextField(
-              controller: emailController,
-              focusNode: _emailFocusNode, // Novo: Vincula focus node
-              textInputAction: TextInputAction.next, // Novo: Ação do teclado
-              onSubmitted: (_) {
-                // Novo: Enter no campo usuário
-                FocusScope.of(context).requestFocus(_passwordFocusNode);
-              },
-              decoration: _inputDecoration(),
-              style: const TextStyle(fontSize: 18),
-            ),
-          ],
-        ),
-
-        // Campo Senha
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              "Senha",
+              "Senha Mestra", // Texto alterado
               style: TextStyle(
                 fontSize: 20,
                 color: Colors.white,
@@ -177,119 +149,70 @@ class _LoginScreenState extends State<LoginScreen> {
             const SizedBox(height: 8),
             TextField(
               controller: passwordController,
-              focusNode: _passwordFocusNode, // Novo: Vincula focus node
-              textInputAction: TextInputAction.done, // Novo: Ação do teclado
-              onSubmitted: (_) {
-                // Novo: Enter no campo senha
-                _efetuarLogin(
-                  context,
-                  emailController.text,
-                  passwordController.text,
-                );
-              },
+              textAlign: TextAlign.center,
+              onSubmitted: (_) => _verificarSenhaMestra(),
               decoration: _inputDecoration(),
               style: const TextStyle(fontSize: 18),
               obscureText: true,
             ),
           ],
         ),
+        
+        const SizedBox(height: 40), // Espaçamento maior
 
-        // Botão Login + Esqueci a senha
-        Column(
-          children: [
-            SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: ElevatedButton(
-                onPressed:
-                    () => _efetuarLogin(
-                      context,
-                      emailController.text,
-                      passwordController.text,
-                    ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF0083A2),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(5),
-                  ),
-                ),
-                child: const Text(
-                  "Login",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ),
-            TextButton(
-              onPressed: () {},
-              child: const Text(
-                "Esqueci minha senha?",
-                style: TextStyle(color: Colors.white),
-              ),
-            ),
-          ],
-        ),
-
-        // Botão "Criar Nova Conta"
-        Container(
-          width: MediaQuery.of(context).size.width * 0.8,
-          margin: EdgeInsets.only(
-            bottom: MediaQuery.of(context).size.height * _bottomMarginRatio,
-          ),
+        // Botão Desbloquear
+        SizedBox(
+          width: double.infinity,
+          height: 50,
           child: ElevatedButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const RegisterScreen()),
-              );
-            },
+            onPressed: _verificarSenhaMestra,
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF033D56),
-              padding: const EdgeInsets.symmetric(vertical: 16),
+              backgroundColor: const Color(0xFF0083A2),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(5),
               ),
             ),
-            child: const Text(
-              "Criar Nova Conta",
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+            child: _isLoading
+                ? const CircularProgressIndicator(color: Colors.white)
+                : const Text(
+                    "Desbloquear", // Texto do botão alterado
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
           ),
         ),
 
-        // Versão do sistema
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            MouseRegion(
-              cursor: SystemMouseCursors.click,
-              child: InkWell(
-                splashColor: Colors.transparent,
-                highlightColor: Colors.transparent,
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => InfosPage()),
-                  );
-                },
-                child: const Text(
-                  'SGI V0.1',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.white,
-                    fontWeight: FontWeight.w500,
-                  ),
+        const Spacer(), // Usa o espaço restante para empurrar a versão para baixo
+
+        // Versão do sistema (mantida)
+        Container(
+          margin: EdgeInsets.only(
+            bottom: MediaQuery.of(context).size.height * _bottomMarginRatio,
+          ),
+          child: MouseRegion(
+            cursor: SystemMouseCursors.click,
+            child: InkWell(
+              splashColor: Colors.transparent,
+              highlightColor: Colors.transparent,
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => InfosPage()),
+                );
+              },
+              child: const Text(
+                'SGI V0.1',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.white,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
             ),
-          ],
+          ),
         ),
       ],
     );
@@ -302,6 +225,14 @@ class _LoginScreenState extends State<LoginScreen> {
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(5),
         borderSide: const BorderSide(color: Color(0xFF262626), width: 2),
+      ),
+       enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(5),
+        borderSide: BorderSide.none, // Remove a borda padrão
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(5),
+        borderSide: const BorderSide(color: Color(0xFF0083A2), width: 2), // Borda azul quando focado
       ),
     );
   }

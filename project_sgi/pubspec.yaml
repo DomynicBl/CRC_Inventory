@@ -22,6 +22,7 @@ dependencies:
   flutter_image_compress: ^2.1.0 # Para otimizar as imagens
   firebase_core: ^2.27.0 # Base do Firebase
   firebase_storage: ^11.6.9 # Firebase Storage
+  shared_preferences: ^2.5.3
 
 # Dependências de desenvolvimento (testes, lints e ferramentas auxiliares)
 dev_dependencies:
