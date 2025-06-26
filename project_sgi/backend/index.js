@@ -9,8 +9,8 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// const PORT = process.env.PORT || 3000;
-// const MONGO_URI = process.env.MONGODB_URI;
+const PORT = process.env.PORT || 3000;
+const MONGO_URI = process.env.MONGODB_URI;
 
 // Conectar ao MongoDB Atlas
 mongoose.connect(MONGO_URI, {
