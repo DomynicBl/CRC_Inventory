@@ -167,7 +167,6 @@ class _MapScreenState extends State<MapScreen> {
             maxScale: 5.0,
             child: LayoutBuilder(
               builder: (context, constraints) {
-                // ... (seu código de Stack com Image.asset e FutureBuilder<List<MapMarker>>) ...
                 final renderedWidth = constraints.maxWidth;
                 final renderedHeight = constraints.maxHeight;
                 return Stack(
@@ -200,7 +199,6 @@ class _MapScreenState extends State<MapScreen> {
                     ),
                   ],
                 );
-                // ... (Fim do seu código de Stack) ...
               },
             ),
           ),
@@ -250,13 +248,12 @@ class _MapScreenState extends State<MapScreen> {
     );
   }
 
-  // --- _buildMarker e _showMarkerInfo (Mantidos como estavam) ---
+  // --- _buildMarker CÓDIGO COMPLETO ---
   Widget _buildMarker(
     MapMarker marker,
     Size originalImageSize,
     BoxConstraints constraints,
   ) {
-    // ... (Seu código _buildMarker) ...
     final renderedAspectRatio = constraints.maxWidth / constraints.maxHeight;
     final imageAspectRatio = originalImageSize.width / originalImageSize.height;
 
@@ -314,13 +311,67 @@ class _MapScreenState extends State<MapScreen> {
     );
   }
 
+  // --- _showMarkerInfo COM LÓGICA DE BUSCA DINÂMICA ---
   void _showMarkerInfo(int number, String name) {
-    // ... (Seu código _showMarkerInfo) ...
+    final machineService = MachineService();
+    // Formata o nome do prédio como o backend espera (ex: "P30")
+    final buildingName = 'P$number';
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Localização $name'),
-        content: Text('Informações detalhadas sobre o prédio $number'),
+        title: Text('Máquinas em: $name'),
+        // O conteúdo agora é um FutureBuilder que busca e exibe os dados
+        content: FutureBuilder<List<Map<String, dynamic>>>(
+          // O "Future" que o builder vai observar
+          future: machineService.getMachinesByBuilding(buildingName),
+          builder: (context, snapshot) {
+            // --- ESTADO DE CARREGAMENTO ---
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const SizedBox(
+                height: 100,
+                child: Center(child: CircularProgressIndicator()),
+              );
+            }
+
+            // --- ESTADO DE ERRO ---
+            if (snapshot.hasError) {
+              return Text('Erro ao buscar as máquinas: ${snapshot.error}');
+            }
+
+            // --- ESTADO DE SUCESSO ---
+            if (snapshot.hasData) {
+              final machines = snapshot.data!;
+
+              // Caso não encontre nenhuma máquina
+              if (machines.isEmpty) {
+                return const Text('Nenhuma máquina encontrada neste prédio.');
+              }
+
+              // Se encontrou, exibe a lista de patrimônios
+              // Usamos um SizedBox para limitar a altura do conteúdo do Dialog
+              return SizedBox(
+                width: double.maxFinite,
+                height: 300, // Ajuste a altura conforme necessário
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: machines.length,
+                  itemBuilder: (context, index) {
+                    final machine = machines[index];
+                    return ListTile(
+                      leading: const Icon(Icons.computer, color: Colors.blueGrey),
+                      title: Text('Patrimônio: ${machine['patrimonio'] ?? 'N/A'}'),
+                      subtitle: Text('Sala: ${machine['sala'] ?? 'N/A'}'),
+                    );
+                  },
+                ),
+              );
+            }
+
+            // Estado padrão (não deve ser alcançado)
+            return const Text('Nenhuma informação disponível.');
+          },
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),

@@ -140,31 +140,17 @@ app.post("/verify-master-password", (req, res) => {
   // Pega a senha enviada pelo app Flutter no corpo da requisição
   const { password } = req.body;
 
-  // Pega a senha mestra das variáveis de ambiente que o dotenv carregou
-  const masterPassword = process.env.MASTER_PASS;
+  // A senha "mestra" agora está definida ("hardcoded") diretamente no código
+  const masterPassword = "teste"; // <<< A MUDANÇA ESTÁ AQUI
 
-  // ========================================================
-  //              LOGS PARA DEBUG - INÍCIO
-  // ========================================================
-  console.log("--- INICIANDO VERIFICAÇÃO DE SENHA ---");
+  // Seus logs de debug continuam úteis
+  console.log("--- INICIANDO VERIFICAÇÃO DE SENHA (MODO TESTE) ---");
   console.log(`Senha recebida do App: '${password}'`);
-  console.log(`Senha Mestra do Render: '${masterPassword}'`);
-  console.log(`As senhas são iguais? (password === masterPassword): ${password === masterPassword}`);
-  console.log("-----------------------------------------");
-  // ========================================================
-  //               LOGS PARA DEBUG - FIM
-  // ========================================================
+  console.log(`Senha fixa no código: '${masterPassword}'`);
+  console.log(`As senhas são iguais? ${password === masterPassword}`);
+  console.log("-------------------------------------------------");
 
-  // Verifica se a senha mestra foi configurada no servidor (no Render)
-  if (!masterPassword) {
-    console.error("A variável de ambiente MASTER_PASS não está definida!");
-    return res.status(500).json({
-      success: false,
-      message: "Erro de configuração no servidor."
-    });
-  }
-
-  // Compara a senha enviada com a senha mestra
+  // Compara a senha enviada com a senha "teste"
   if (password === masterPassword) {
     // Se forem iguais, retorna sucesso
     res.status(200).json({ success: true, message: "Acesso concedido." });
@@ -173,7 +159,6 @@ app.post("/verify-master-password", (req, res) => {
     res.status(401).json({ success: false, message: "Senha incorreta." });
   }
 });
-
 
 // =================================================================
 // INICIALIZAÇÃO DO SERVIDOR
