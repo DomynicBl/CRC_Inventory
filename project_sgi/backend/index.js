@@ -2,6 +2,7 @@ import express from "express";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import cors from "cors";
+// Módulos para lidar com caminhos de arquivos
 import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -12,16 +13,19 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Configuração padrão para __dirname em ES Modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const PORT = process.env.PORT || 3000;
 const MONGO_URI = process.env.MONGODB_URI;
 
+// Conexão com o MongoDB
 mongoose.connect(MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => console.log("Conectado ao MongoDB Atlas"))
   .catch(err => console.error("Erro ao conectar no MongoDB:", err));
 
+// Schema da Máquina
 const maquinaSchema = new mongoose.Schema({
   nome: String,
   patrimonio: String,
@@ -42,6 +46,7 @@ const Maquina = mongoose.model("Maquina", maquinaSchema);
 
 // --- ROTAS DA APLICAÇÃO ---
 
+// Rota para CRIAR uma nova máquina
 app.post("/maquinas", async (req, res) => {
   try {
     const nova = new Maquina(req.body);
@@ -52,6 +57,7 @@ app.post("/maquinas", async (req, res) => {
   }
 });
 
+// Rota para BUSCAR máquinas
 app.get("/maquinas", async (req, res) => {
   const { patrimonio } = req.query;
   try {
@@ -67,6 +73,7 @@ app.get("/maquinas", async (req, res) => {
   }
 });
 
+// Rota para BUSCAR máquinas por prédio
 app.get("/maquinas/por-predio", async (req, res) => {
   const { nome } = req.query;
   if (!nome) return res.status(400).json({ erro: "O parâmetro 'nome' do prédio é obrigatório." });
@@ -79,6 +86,7 @@ app.get("/maquinas/por-predio", async (req, res) => {
   }
 });
 
+// Rota para EXCLUIR uma máquina
 app.delete("/maquinas/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -90,6 +98,7 @@ app.delete("/maquinas/:id", async (req, res) => {
   }
 });
 
+// Rota para ATUALIZAR uma máquina
 app.put("/maquinas/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -101,11 +110,11 @@ app.put("/maquinas/:id", async (req, res) => {
   }
 });
 
-// --- ROTA DE LOCAIS CORRIGIDA ---
+// Rota para BUSCAR os locais
 app.get("/locations", async (req, res) => {
   try {
-    // MUDANÇA AQUI: Adicionado '..' para subir um nível no diretório
-    const data = await fs.readFile(path.join(__dirname, '..', 'locations.json'), 'utf-8');
+    // Procura o arquivo 'locations.json' no mesmo diretório do index.js
+    const data = await fs.readFile(path.join(__dirname, 'locations.json'), 'utf-8');
     res.json(JSON.parse(data));
   } catch (err) {
     console.error("Erro ao ler o arquivo de locais:", err);
@@ -113,11 +122,11 @@ app.get("/locations", async (req, res) => {
   }
 });
 
-// --- ROTA DE COMPONENTES CORRIGIDA ---
+// Rota para BUSCAR os componentes
 app.get("/components", async (req, res) => {
   try {
-    // MUDANÇA AQUI: Adicionado '..' para subir um nível no diretório
-    const data = await fs.readFile(path.join(__dirname, '..', 'components.json'), 'utf-8');
+    // Procura o arquivo 'components.json' no mesmo diretório do index.js
+    const data = await fs.readFile(path.join(__dirname, 'components.json'), 'utf-8');
     res.json(JSON.parse(data));
   } catch (err) {
     console.error("Erro ao ler o arquivo de componentes:", err);
@@ -125,6 +134,7 @@ app.get("/components", async (req, res) => {
   }
 });
 
+// Rota para VERIFICAR a senha mestra
 app.post("/verify-master-password", (req, res) => {
   const { password } = req.body;
   if (password === "teste") {
@@ -134,4 +144,5 @@ app.post("/verify-master-password", (req, res) => {
   }
 });
 
+// Inicialização do Servidor
 app.listen(PORT, () => console.log(`Servidor rodando na porta ${PORT}`));
