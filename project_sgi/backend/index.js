@@ -2,6 +2,10 @@ import express from "express";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import cors from "cors";
+// Módulos adicionados para ler arquivos do servidor
+import fs from 'fs/promises';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 dotenv.config();
 
@@ -9,11 +13,14 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// A variável PORT estava comentada, o que impedia o servidor de iniciar.
+// Configuração necessária para encontrar o caminho do arquivo no ambiente do Render
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 const PORT = process.env.PORT || 3000;
 const MONGO_URI = process.env.MONGODB_URI;
 
-// Conectar ao MongoDB Atlas
+// Conexão com o MongoDB
 mongoose.connect(MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
@@ -23,7 +30,7 @@ mongoose.connect(MONGO_URI, {
   console.error("Erro ao conectar no MongoDB:", err);
 });
 
-// Schema para máquina
+// Schema da Máquina
 const maquinaSchema = new mongoose.Schema({
   nome: String,
   patrimonio: String,
@@ -52,12 +59,14 @@ app.post("/maquinas", async (req, res) => {
   }
 });
 
-// Rota maquinas com verificação
+// Rota para buscar máquinas (por patrimônio ou todas)
 app.get("/maquinas", async (req, res) => {
   const { patrimonio } = req.query;
   try {
     if (patrimonio) {
-      const maquinas = await Maquina.find({ patrimonio: { $regex: `^${patrimonio}`, $options: 'i' } }).limit(10);
+      const maquinas = await Maquina.find({
+        patrimonio: { $regex: `^${patrimonio}`, $options: 'i' },
+      }).limit(10);
       return res.json(maquinas);
     } else {
       const maquinas = await Maquina.find().sort({ ultimaAtualizacao: -1 }).limit(10);
@@ -72,30 +81,21 @@ app.get("/maquinas", async (req, res) => {
 // Rota para buscar máquinas por prédio (usada no mapa)
 app.get("/maquinas/por-predio", async (req, res) => {
   const { nome } = req.query;
-
   if (!nome) {
     return res.status(400).json({ erro: "O parâmetro 'nome' do prédio é obrigatório." });
   }
-
+  // Remove o "P" do início para buscar pelo número (Ex: "P30" vira "30")
   const numeroPredio = nome.replace(/^p/i, ''); 
-
   try {
-    console.log(`Recebido: ${nome}. Buscando por prédio: '${numeroPredio}'`);
-    
-    // Agora, a busca é feita usando apenas o número do prédio.
-    const maquinas = await Maquina.find({
-      predio: numeroPredio
-    }).sort({ sala: 1 });
-
-    console.log(`Encontradas ${maquinas.length} máquinas.`);
+    const maquinas = await Maquina.find({ predio: numeroPredio }).sort({ sala: 1 });
     res.json(maquinas);
-
   } catch (err) {
     console.error("Erro ao buscar máquinas por prédio:", err);
     res.status(500).json({ erro: "Erro interno ao buscar máquinas por prédio." });
   }
 });
 
+// Rota para excluir máquina pelo ID
 app.delete("/maquinas/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -107,6 +107,7 @@ app.delete("/maquinas/:id", async (req, res) => {
   }
 });
 
+// Rota para atualizar máquina pelo ID
 app.put("/maquinas/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -115,7 +116,9 @@ app.put("/maquinas/:id", async (req, res) => {
       { ...req.body, ultimaAtualizacao: Date.now() },
       { new: true }
     );
-    if (!atualizada) return res.status(404).json({ erro: "Máquina não encontrada." });
+    if (!atualizada) {
+      return res.status(404).json({ erro: "Máquina não encontrada." });
+    }
     res.json(atualizada);
   } catch (err) {
     console.error(err);
@@ -123,6 +126,22 @@ app.put("/maquinas/:id", async (req, res) => {
   }
 });
 
+
+// --- NOVA ROTA PARA VALIDAR LOCAIS ---
+// Esta rota lê o arquivo `locations.json` e o envia para o app.
+app.get("/locations", async (req, res) => {
+  try {
+    const data = await fs.readFile(path.join(__dirname, 'locations.json'), 'utf-8');
+    const locations = JSON.parse(data);
+    res.json(locations);
+  } catch (err) {
+    console.error("Erro ao ler o arquivo de locais:", err);
+    res.status(500).json({ erro: "Não foi possível carregar os dados de locais." });
+  }
+});
+
+
+// Rota para verificação da senha mestra
 app.post("/verify-master-password", (req, res) => {
   const { password } = req.body;
   const masterPassword = "teste";
@@ -133,6 +152,8 @@ app.post("/verify-master-password", (req, res) => {
   }
 });
 
+
+// Inicialização do Servidor
 app.listen(PORT, () => {
-  console.log(`Servidor rodando em http://localhost:${PORT}`);
+  console.log(`Servidor rodando na porta ${PORT}`);
 });
