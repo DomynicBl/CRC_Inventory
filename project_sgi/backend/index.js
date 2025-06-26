@@ -57,7 +57,7 @@ app.post("/maquinas", async (req, res) => {
   }
 });
 
-// Rota para BUSCAR máquinas
+// Rota para BUSCAR máquinas (geral ou por patrimônio)
 app.get("/maquinas", async (req, res) => {
   const { patrimonio } = req.query;
   try {
@@ -70,6 +70,19 @@ app.get("/maquinas", async (req, res) => {
     }
   } catch (err) {
     res.status(500).json({ erro: "Erro ao buscar máquinas." });
+  }
+});
+
+// >>> NOVA ROTA PARA BUSCAR MÁQUINAS COM CHAMADOS <<<
+app.get("/maquinas/chamados", async (req, res) => {
+  try {
+    // Busca máquinas onde o campo 'problema' existe e não é uma string vazia
+    const maquinasComProblema = await Maquina.find({
+      problema: { $exists: true, $ne: "" }
+    }).sort({ ultimaAtualizacao: -1 }); // Ordena pelas mais recentes
+    res.json(maquinasComProblema);
+  } catch (err) {
+    res.status(500).json({ erro: "Erro ao buscar máquinas com chamados." });
   }
 });
 
@@ -113,11 +126,9 @@ app.put("/maquinas/:id", async (req, res) => {
 // Rota para BUSCAR os locais
 app.get("/locations", async (req, res) => {
   try {
-    // Procura o arquivo 'locations.json' no mesmo diretório do index.js
     const data = await fs.readFile(path.join(__dirname, 'locations.json'), 'utf-8');
     res.json(JSON.parse(data));
   } catch (err) {
-    console.error("Erro ao ler o arquivo de locais:", err);
     res.status(500).json({ erro: "Não foi possível carregar os dados de locais." });
   }
 });
@@ -125,11 +136,9 @@ app.get("/locations", async (req, res) => {
 // Rota para BUSCAR os componentes
 app.get("/components", async (req, res) => {
   try {
-    // Procura o arquivo 'components.json' no mesmo diretório do index.js
     const data = await fs.readFile(path.join(__dirname, 'components.json'), 'utf-8');
     res.json(JSON.parse(data));
   } catch (err) {
-    console.error("Erro ao ler o arquivo de componentes:", err);
     res.status(500).json({ erro: "Não foi possível carregar os dados de componentes." });
   }
 });
