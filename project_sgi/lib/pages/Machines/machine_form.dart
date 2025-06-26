@@ -1,234 +1,159 @@
-import 'package:project_sgi/api/machine_service.dart';
 import 'package:flutter/material.dart';
-// Importe a nova página de scanner
-import 'barcode_scanner_return_page.dart'; // <<< VERIFIQUE ESTE CAMINHO
+import 'package:flutter/services.dart';
+import 'package:project_sgi/api/machine_service.dart';
+import 'barcode_scanner_return_page.dart';
 
 class MachineForm extends StatefulWidget {
   const MachineForm({super.key});
 
   @override
-  // ignore: library_private_types_in_public_api
   _MachineFormState createState() => _MachineFormState();
 }
 
 class _MachineFormState extends State<MachineForm> {
-  String? memoryValue;
-  String ticket = 'Não Validado';
+  final _formKey = GlobalKey<FormState>();
+  final _service = MachineService();
+  
+  // Controllers para campos de texto
+  final nomeController = TextEditingController();
+  final patrimonioController = TextEditingController();
+  final modeloController = TextEditingController();
+  final problemaController = TextEditingController();
+  final observacaoController = TextEditingController();
 
-  final TextEditingController nomeController = TextEditingController();
-  final TextEditingController patrimonioController = TextEditingController();
-  final TextEditingController predioController = TextEditingController();
-  final TextEditingController salaController = TextEditingController();
-  final TextEditingController monitorController = TextEditingController();
-  final TextEditingController modeloController = TextEditingController();
-  final TextEditingController processadorController = TextEditingController();
-  final TextEditingController problemaController = TextEditingController();
-  final TextEditingController observacaoController = TextEditingController();
+  // Variáveis para os dropdowns
+  String? _selectedPredio, _selectedSala, _selectedMonitor, _selectedProcessador, _selectedMemoria, _selectedArmazenamento;
+  
+  Map<String, dynamic>? _locations, _components;
+  List<String> _availableRooms = [];
+  bool _isLoading = true;
 
-  // --- NOVA FUNÇÃO PARA ESCANEAR ---
-  Future<void> _scanBarcode() async {
+  @override
+  void initState() {
+    super.initState();
+    _loadInitialData();
+  }
+  
+  @override
+  void dispose() {
+    // Limpeza dos controllers para evitar vazamento de memória
+    nomeController.dispose();
+    patrimonioController.dispose();
+    modeloController.dispose();
+    problemaController.dispose();
+    observacaoController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadInitialData() async {
     try {
-      // Navega para a página do scanner e espera o resultado
-      final String? barcodeValue = await Navigator.push<String>(
-        context,
-        MaterialPageRoute(builder: (context) => const BarcodeScannerReturnPage()),
-      );
-
-      // Se um valor foi retornado (ou seja, o usuário não apenas voltou),
-      // atualiza o campo de patrimônio.
-      if (barcodeValue != null && barcodeValue.isNotEmpty) {
-        setState(() {
-          patrimonioController.text = barcodeValue;
-        });
-      }
+      final locData = await _service.getLocations();
+      final compData = await _service.getComponents();
+      setState(() {
+        _locations = locData;
+        _components = compData;
+        _isLoading = false;
+      });
     } catch (e) {
-      // Mostra um erro se algo der errado (ex: permissão da câmera negada)
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erro ao escanear: ${e.toString()}')),
-      );
+      setState(() => _isLoading = false);
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Erro ao carregar opções: $e')));
     }
   }
-  // --- FIM DA NOVA FUNÇÃO ---
+
+  void _updateAvailableRooms(String? buildingName) {
+    if (buildingName == null || _locations == null) {
+      _availableRooms = []; return;
+    }
+    final building = (_locations!['buildings'] as List).firstWhere((b) => b['name'] == buildingName, orElse: () => null);
+    if (building != null) {
+      _selectedPredio = building['id'];
+      _availableRooms = List<String>.from(building['rooms']);
+    } else {
+      _availableRooms = [];
+    }
+    _selectedSala = null; // Reseta a sala ao mudar de prédio
+  }
+  
+  Future<void> _scanBarcode() async {
+    try {
+      final String? barcodeValue = await Navigator.push<String>(context, MaterialPageRoute(builder: (context) => const BarcodeScannerReturnPage()));
+      if (barcodeValue != null && barcodeValue.isNotEmpty) {
+        setState(() => patrimonioController.text = barcodeValue);
+      }
+    } catch (e) {
+      if(mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Erro ao escanear: $e')));
+    }
+  }
+
+  void _submitForm() async {
+    if (_formKey.currentState!.validate()) {
+      final dados = {
+        'nome': nomeController.text,
+        'patrimonio': patrimonioController.text,
+        'modelo': modeloController.text,
+        'problema': problemaController.text,
+        'observacoes': observacaoController.text,
+        'predio': _selectedPredio,
+        'sala': _selectedSala,
+        'monitor': _selectedMonitor,
+        'processador': _selectedProcessador,
+        'memoria': _selectedMemoria,
+        'armazenamento': _selectedArmazenamento,
+      };
+
+      try {
+        await _service.addMachine(dados);
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Máquina cadastrada com sucesso!')));
+        Navigator.pop(context, true);
+      } catch (e) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Erro ao cadastrar: $e')));
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F7FB),
-      appBar: AppBar(
-        title: const Text('Cadastro de Máquina'),
-        centerTitle: true,
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black87,
-        elevation: 1,
-      ),
-      body: SingleChildScrollView(
+      appBar: AppBar(title: const Text('Cadastro de Máquina')),
+      body: _isLoading ? const Center(child: CircularProgressIndicator()) : SingleChildScrollView(
         padding: const EdgeInsets.all(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            buildTextField('Nome da máquina', nomeController),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: buildTextField('Patrimônio', patrimonioController),
-                ),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            children: [
+              TextFormField(controller: nomeController, decoration: const InputDecoration(labelText: 'Nome da máquina'), validator: (v) => (v!.isEmpty) ? 'Campo obrigatório' : null),
+              const SizedBox(height: 12),
+              Row(children: [
+                Expanded(child: TextFormField(controller: patrimonioController, decoration: const InputDecoration(labelText: 'Patrimônio', counterText: ""), keyboardType: TextInputType.number, inputFormatters: [FilteringTextInputFormatter.digitsOnly], maxLength: 11, validator: (v) { if (v!.isEmpty) return 'Campo obrigatório'; if (v.length != 11) return 'Patrimônio deve ter 11 dígitos'; return null; })),
                 const SizedBox(width: 12),
-                ElevatedButton(
-                  // --- ATUALIZA O onPressed ---
-                  onPressed: _scanBarcode, // Chama a função de escaneamento
-                  // --- FIM DA ATUALIZAÇÃO ---
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF0066FF),
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15), // Ajuste de padding
-                    shape: RoundedRectangleBorder( // Borda arredondada
-                        borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                  child: const Row( // Adiciona ícone
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                       Icon(Icons.qr_code_scanner, color: Colors.white),
-                       SizedBox(width: 8),
-                       Text(
-                        'Escanear',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    ],
-                  )
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            buildTextField('Prédio', predioController),
-            buildTextField('Sala', salaController),
-            buildTextField('Monitor', monitorController),
-            buildTextField('Modelo', modeloController),
-            buildTextField('Processador', processadorController),
-            const SizedBox(height: 12),
-            buildDropdown(['4GB', '6GB', '8GB', '16GB', '32GB']),
-            buildTextField('Problema (se houver)', problemaController),
-            buildTextField('Observações / Justificativa', observacaoController),
-            const SizedBox(height: 16),
-            Center(
-              child: ElevatedButton.icon( // Adiciona ícone
-                onPressed: () {
-                  print('Registrar foto...');
-                  // Aqui você implementaria a lógica da câmera
-                },
-                icon: const Icon(Icons.camera_alt, color: Colors.white),
-                label: const Text(
-                  'Registrar Foto',
-                  style: TextStyle(color: Colors.white),
-                ),
-                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF0066FF),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 12,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 24),
-            Center(
-              child: ElevatedButton.icon( // Adiciona ícone
-                onPressed: () async {
-                  final dados = _criarMaquinaComoMapa();
-                  try {
-                     await MachineService().addMachine(dados);
-                     ScaffoldMessenger.of(context).showSnackBar(
-                       const SnackBar(
-                         content: Text('Máquina cadastrada com sucesso!'),
-                         backgroundColor: Color(0xFF002238), // Feedback visual
-                       ),
-                     );
-                     Navigator.pop(context, true); // Retorna true para indicar sucesso
-                  } catch (e) {
-                     ScaffoldMessenger.of(context).showSnackBar(
-                       SnackBar(
-                         content: Text('Erro ao cadastrar: ${e.toString()}'),
-                         backgroundColor: Colors.red, // Feedback visual
-                       ),
-                     );
-                  }
-                },
-                icon: const Icon(Icons.send, color: Colors.white),
-                label: const Text('Enviar Cadastro'),
-                style: ElevatedButton.styleFrom(
-                   backgroundColor: Color(0xFF002238), 
-                   foregroundColor: Colors.white,
-                   padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 15),
-                   textStyle: const TextStyle(fontSize: 16),
-                ),
-              ),
-            ),
-          ],
+                ElevatedButton(onPressed: _scanBarcode, child: const Icon(Icons.qr_code_scanner)),
+              ]),
+              const SizedBox(height: 12),
+              TextFormField(controller: modeloController, decoration: const InputDecoration(labelText: 'Modelo'), validator: (v) => (v!.isEmpty) ? 'Campo obrigatório' : null),
+              const SizedBox(height: 12),
+              DropdownButtonFormField<String>(value: _locations?['buildings']?.firstWhere((b) => b['id'] == _selectedPredio, orElse: () => null)?['name'], decoration: const InputDecoration(labelText: 'Prédio'), items: _locations?['buildings']?.map<DropdownMenuItem<String>>((b) => DropdownMenuItem(value: b['name'], child: Text(b['name']))).toList(), onChanged: (v) => setState(() => _updateAvailableRooms(v)), validator: (v) => v == null ? 'Campo obrigatório' : null),
+              const SizedBox(height: 12),
+              DropdownButtonFormField<String>(value: _selectedSala, decoration: const InputDecoration(labelText: 'Sala'), items: _availableRooms.map((r) => DropdownMenuItem(value: r, child: Text(r))).toList(), onChanged: (v) => setState(() => _selectedSala = v), validator: (v) => v == null ? 'Campo obrigatório' : null),
+              const SizedBox(height: 12),
+              DropdownButtonFormField<String>(value: _selectedMonitor, decoration: const InputDecoration(labelText: 'Monitor'), items: _components?['monitors']?.map<DropdownMenuItem<String>>((m) => DropdownMenuItem(value: m, child: Text(m))).toList(), onChanged: (v) => setState(() => _selectedMonitor = v), validator: (v) => v == null ? 'Campo obrigatório' : null),
+              const SizedBox(height: 12),
+              DropdownButtonFormField<String>(value: _selectedProcessador, decoration: const InputDecoration(labelText: 'Processador'), items: _components?['processors']?.map<DropdownMenuItem<String>>((p) => DropdownMenuItem(value: p, child: Text(p))).toList(), onChanged: (v) => setState(() => _selectedProcessador = v), validator: (v) => v == null ? 'Campo obrigatório' : null),
+              const SizedBox(height: 12),
+              DropdownButtonFormField<String>(value: _selectedArmazenamento, decoration: const InputDecoration(labelText: 'Armazenamento'), items: _components?['storage']?.map<DropdownMenuItem<String>>((s) => DropdownMenuItem(value: s, child: Text(s))).toList(), onChanged: (v) => setState(() => _selectedArmazenamento = v), validator: (v) => v == null ? 'Campo obrigatório' : null),
+              const SizedBox(height: 12),
+              DropdownButtonFormField<String>(value: _selectedMemoria, decoration: const InputDecoration(labelText: 'Memória'), items: _components?['memory']?.map<DropdownMenuItem<String>>((m) => DropdownMenuItem(value: m, child: Text(m))).toList(), onChanged: (v) => setState(() => _selectedMemoria = v), validator: (v) => v == null ? 'Campo obrigatório' : null),
+              const SizedBox(height: 12),
+              TextFormField(controller: problemaController, decoration: const InputDecoration(labelText: 'Problema (se houver)')),
+              const SizedBox(height: 12),
+              TextFormField(controller: observacaoController, decoration: const InputDecoration(labelText: 'Observações / Justificativa')),
+              const SizedBox(height: 24),
+              ElevatedButton.icon(onPressed: _submitForm, icon: const Icon(Icons.send), label: const Text('Enviar Cadastro')),
+            ],
+          ),
         ),
       ),
     );
-  }
-
-  Widget buildTextField(String label, TextEditingController controller) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: TextField(
-        controller: controller,
-        decoration: InputDecoration(
-          labelText: label,
-          filled: true,
-          fillColor: Colors.white,
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-        ),
-      ),
-    );
-  }
-
-  Widget buildDropdown(List<String> items) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: DropdownButtonFormField<String>(
-        value: memoryValue,
-        dropdownColor: Colors.white,
-        style: const TextStyle(color: Colors.black),
-        decoration: InputDecoration(
-          labelText: 'Selecione a memória',
-          filled: true,
-          fillColor: Colors.white,
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-        ),
-        iconEnabledColor: Colors.black,
-        items: items.map((item) {
-          return DropdownMenuItem<String>(
-            value: item,
-            child: Text(item, style: const TextStyle(color: Colors.black)),
-          );
-        }).toList(),
-        onChanged: (value) {
-          setState(() {
-            memoryValue = value;
-          });
-        },
-      ),
-    );
-  }
-
-  Map<String, dynamic> _criarMaquinaComoMapa() {
-    return {
-      'nome': nomeController.text,
-      'patrimonio': patrimonioController.text,
-      'predio': predioController.text,
-      'sala': salaController.text,
-      'monitor': monitorController.text,
-      'modelo': modeloController.text,
-      'processador': processadorController.text,
-      'memoria': memoryValue ?? '',
-      'problema': problemaController.text,
-      'observacoes': observacaoController.text,
-      'ultimaAtualizacao': DateTime.now().toIso8601String(),
-    };
   }
 }

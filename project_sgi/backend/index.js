@@ -101,20 +101,26 @@ app.put("/maquinas/:id", async (req, res) => {
   }
 });
 
+// --- ROTA DE LOCAIS CORRIGIDA ---
 app.get("/locations", async (req, res) => {
   try {
-    const data = await fs.readFile(path.join(__dirname, 'locations.json'), 'utf-8');
+    // MUDANÇA AQUI: Adicionado '..' para subir um nível no diretório
+    const data = await fs.readFile(path.join(__dirname, '..', 'locations.json'), 'utf-8');
     res.json(JSON.parse(data));
   } catch (err) {
+    console.error("Erro ao ler o arquivo de locais:", err);
     res.status(500).json({ erro: "Não foi possível carregar os dados de locais." });
   }
 });
 
+// --- ROTA DE COMPONENTES CORRIGIDA ---
 app.get("/components", async (req, res) => {
   try {
-    const data = await fs.readFile(path.join(__dirname, 'components.json'), 'utf-8');
+    // MUDANÇA AQUI: Adicionado '..' para subir um nível no diretório
+    const data = await fs.readFile(path.join(__dirname, '..', 'components.json'), 'utf-8');
     res.json(JSON.parse(data));
   } catch (err) {
+    console.error("Erro ao ler o arquivo de componentes:", err);
     res.status(500).json({ erro: "Não foi possível carregar os dados de componentes." });
   }
 });
