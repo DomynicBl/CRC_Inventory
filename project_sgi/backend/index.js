@@ -72,6 +72,31 @@ app.get("/maquinas", async (req, res) => {
   }
 });
 
+app.get("/maquinas/por-predio", async (req, res) => {
+  // Pega o nome do prédio a partir dos parâmetros da URL (query parameter)
+  // Exemplo de chamada: /maquinas/por-predio?nome=P30
+  const { nome } = req.query;
+
+  // Verifica se o parâmetro 'nome' foi enviado na requisição
+  if (!nome) {
+    return res.status(400).json({ erro: "O parâmetro 'nome' do prédio é obrigatório." });
+  }
+
+  try {
+    // Busca no banco de dados por máquinas onde o campo 'predio'
+    // corresponde ao valor fornecido, ignorando maiúsculas e minúsculas.
+    const maquinas = await Maquina.find({
+      predio: { $regex: new RegExp(`^${nome}$`, 'i') }
+    }).sort({ sala: 1 }); // Ordena por sala para um resultado mais organizado
+
+    // Retorna a lista de máquinas encontradas (ou uma lista vazia, se nenhuma for encontrada)
+    res.json(maquinas);
+
+  } catch (err) {
+    console.error("Erro ao buscar máquinas por prédio:", err);
+    res.status(500).json({ erro: "Erro interno ao buscar máquinas por prédio." });
+  }
+});
 
 // Rota para excluir máquina pelo ID
 app.delete("/maquinas/:id", async (req, res) => {

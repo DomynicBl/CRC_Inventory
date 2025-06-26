@@ -1,56 +1,14 @@
 import 'package:flutter/material.dart';
-import '../Machines/machine_form.dart'; // import do formulário de cadastro de máquinas
+import '../Machines/machine_form.dart'; // Import do formulário de cadastro de máquinas
 
 /* IMPORTAÇÃO DE TELAS DA HOME */
-import '../Map/map_page.dart'; // importa tela do mapa
-import '../Scanner/barcode_scanner_page.dart'; // import da tela de leitor de código de barras
-import 'profile_page.dart'; // importa tela de usuário
-import 'last_machines_list.dart'; // import da tela das últimas máquinas adicionadas
+import '../Map/map_page.dart'; // Importa tela do mapa
+import '../Scanner/barcode_scanner_page.dart'; // Import da tela de leitor de código de barras
+import 'profile_page.dart'; // Importa tela de usuário
+import 'last_machines_list.dart'; // Import da tela das últimas máquinas adicionadas
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Inventário de Máquinas',
-      theme: ThemeData(
-        primaryColor: const Color(0xFF002238),
-        scaffoldBackgroundColor: Colors.white,
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.white,
-          foregroundColor: Colors.black,
-          elevation: 0,
-        ),
-        bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-          backgroundColor: Colors.white,
-          selectedItemColor: Color(0xFF002238),
-          unselectedItemColor: Colors.grey,
-          elevation: 8,
-        ),
-        elevatedButtonTheme: ElevatedButtonThemeData(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF002238),
-            foregroundColor: Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
-          ),
-        ),
-        textTheme: const TextTheme(
-          bodyMedium: TextStyle(color: Colors.black, fontSize: 18),
-          titleLarge: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-            color: Colors.black87,
-          ),
-        ),
-      ),
-      home: const HomePage(),
-    );
-  }
-}
+// O widget 'MyApp' que continha um MaterialApp foi removido.
+// A navegação agora deve ir diretamente para a HomePage a partir do LoginScreen.
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -62,129 +20,123 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
 
+  // Títulos para cada aba da BottomNavigationBar
   final List<String> _titles = [
     'Painel de Inventário',
-    'Procurar',
-    'BarCode',
-    'Perfil',
+    'Mapa do Campus', // Título mais descritivo para a tela do mapa
+    'Leitor de Código', // Título mais descritivo para o scanner
+    'Perfil do Usuário', // Título mais descritivo
   ];
 
+  // Função para atualizar o índice da aba selecionada
   void _onTabSelected(int index) {
     setState(() {
       _selectedIndex = index;
     });
   }
 
-  // Abre o formulário e, ao retornar, forçar rebuild
+  // Função para abrir o formulário de cadastro de máquina
+  // Ao fechar o formulário, força a reconstrução da lista se a aba "Início" estiver selecionada.
   void _abrirFormulario() {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => const MachineForm()),
-    ).then((_) {
+    ).then((result) {
+      // Verifica se a tela inicial está ativa e se houve um resultado (opcional)
+      // para recarregar a lista.
       if (_selectedIndex == 0) {
-        setState(() {});
+        setState(() {
+          // A reconstrução do HomeContent (que contém LastMachineList)
+          // buscará os dados mais recentes.
+        });
       }
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    // Lista de páginas para a navegação
+    // É importante que não sejam 'const' se precisarem ser reconstruídas
     final pages = <Widget>[
-      HomeContent(), // nova instância sempre
-      MapScreen(),
-      BarcodeScannerPage(),
-      ProfileScreen(),
+      HomeContent(),
+      const MapScreen(),
+      const BarcodeScannerPage(),
+      const ProfileScreen(),
     ];
 
     return Scaffold(
       appBar: AppBar(
+        // O título muda dinamicamente com base na aba selecionada
         title: Text(
           _titles[_selectedIndex],
-          style: const TextStyle(fontWeight: FontWeight.bold),
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(fontSize: 22),
         ),
         centerTitle: false,
-        actions:
-            _selectedIndex == 0
-                ? [
-                  IconButton(
-                    icon: const Icon(Icons.notifications_none),
-                    onPressed: () {},
-                  ),
-                ]
-                : null,
+        // Mostra o ícone de notificações apenas na tela inicial
+        actions: _selectedIndex == 0
+            ? [
+                IconButton(
+                  icon: const Icon(Icons.notifications_none, size: 28),
+                  onPressed: () {
+                    // TODO: Implementar lógica de notificações
+                  },
+                ),
+              ]
+            : null,
       ),
-      body: pages[_selectedIndex],
-      floatingActionButton:
-          _selectedIndex == 0
-              ? FloatingActionButton(
-                onPressed: _abrirFormulario,
-                tooltip: 'Adicionar Máquina',
-                backgroundColor: const Color.fromARGB(255, 199, 232, 255),
-                foregroundColor: const Color(0xFF002238),
-                child: const Icon(Icons.add, size: 28),
-              )
-              : null,
+      body: IndexedStack(
+        index: _selectedIndex,
+        children: pages,
+      ),
+      // Mostra o botão flutuante apenas na tela inicial
+      floatingActionButton: _selectedIndex == 0
+          ? FloatingActionButton(
+              onPressed: _abrirFormulario,
+              tooltip: 'Adicionar Máquina',
+              // As cores agora são herdadas do FloatingActionButtonTheme em main.dart
+              child: const Icon(Icons.add, size: 28),
+            )
+          : null,
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: _onTabSelected,
+        // O tipo 'fixed' garante que o fundo não mude de cor e os itens fiquem alinhados
+        type: BottomNavigationBarType.fixed,
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Início'),
-          BottomNavigationBarItem(icon: Icon(Icons.map), label: 'Mapa'),
           BottomNavigationBarItem(
-            icon: Icon(Icons.barcode_reader),
-            label: 'Pesquisa',
+            icon: Icon(Icons.home_outlined),
+            activeIcon: Icon(Icons.home),
+            label: 'Início',
           ),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Perfil'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.map_outlined),
+            activeIcon: Icon(Icons.map),
+            label: 'Mapa',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.qr_code_scanner_outlined),
+            activeIcon: Icon(Icons.qr_code_scanner),
+            label: 'Scanner',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person_outline),
+            activeIcon: Icon(Icons.person),
+            label: 'Perfil',
+          ),
         ],
       ),
     );
   }
 }
 
+/// O conteúdo principal da aba 'Início'.
 class HomeContent extends StatelessWidget {
   const HomeContent({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return LastMachineList();
-  }
-}
-
-// ignore: unused_element
-class _QuickAction extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-
-  const _QuickAction({
-    Key? key,
-    required this.icon,
-    required this.label,
-    required this.onTap,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(8),
-      child: Column(
-        children: [
-          Container(
-            decoration: BoxDecoration(
-              color: const Color(0xFF002238).withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            padding: const EdgeInsets.all(12),
-            child: Icon(icon, size: 32, color: const Color(0xFF0066FF)),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: const TextStyle(fontSize: 14, color: Colors.black87),
-          ),
-        ],
-      ),
-    );
+    // Este widget agora é reconstruído quando setState é chamado na HomePage,
+    // o que por sua vez reconstrói LastMachineList, atualizando os dados.
+    return const LastMachineList();
   }
 }

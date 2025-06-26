@@ -62,4 +62,23 @@ class MachineService {
     final List data = jsonDecode(response.body);
     return data.cast<Map<String, dynamic>>();
   }
+
+  /// Busca máquinas com base no nome do prédio.
+  /// O nome do prédio deve ser formatado como "P<numero>" (ex: "P30").
+  Future<List<Map<String, dynamic>>> getMachinesByBuilding(String buildingName) async {
+    // A rota do backend espera um query parameter 'nome'
+    final uri = Uri.parse('$baseUrl/por-predio?nome=$buildingName');
+    
+    final response = await http.get(
+      uri,
+      headers: {'Content-Type': 'application/json'},
+    );
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
+      return data.cast<Map<String, dynamic>>();
+    } else {
+      throw Exception('Erro ao buscar máquinas por prédio: ${response.body}');
+    }
+  }
 }
