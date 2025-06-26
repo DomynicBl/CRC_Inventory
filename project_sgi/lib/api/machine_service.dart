@@ -3,7 +3,8 @@ import 'package:http/http.dart' as http;
 
 class MachineService {
   // troque essa URL pela sua do Render, sem “/api” extra
-  static const String baseUrl = 'https://crc-inventory.onrender.com/maquinas';
+  // static const String baseUrl = 'https://crc-inventory.onrender.com/maquinas';
+  static const String baseUrl = 'https://crc-inventory-j85z.onrender.com/maquinas';
 
   Future<void> addMachine(Map<String, dynamic> data) async {
     final resp = await http.post(
