@@ -9,7 +9,6 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// --- CORREÇÃO ---
 // A variável PORT estava comentada, o que impedia o servidor de iniciar.
 const PORT = process.env.PORT || 3000;
 const MONGO_URI = process.env.MONGODB_URI;
@@ -40,7 +39,6 @@ const maquinaSchema = new mongoose.Schema({
   ultimaAtualizacao: { type: Date, default: Date.now }
 });
 
-
 const Maquina = mongoose.model("Maquina", maquinaSchema);
 
 // Rota para criar máquina
@@ -57,12 +55,9 @@ app.post("/maquinas", async (req, res) => {
 // Rota maquinas com verificação
 app.get("/maquinas", async (req, res) => {
   const { patrimonio } = req.query;
-
   try {
     if (patrimonio) {
-      const maquinas = await Maquina.find({
-        patrimonio: { $regex: `^${patrimonio}`, $options: 'i' },
-      }).limit(10);
+      const maquinas = await Maquina.find({ patrimonio: { $regex: `^${patrimonio}`, $options: 'i' } }).limit(10);
       return res.json(maquinas);
     } else {
       const maquinas = await Maquina.find().sort({ ultimaAtualizacao: -1 }).limit(10);
@@ -76,29 +71,23 @@ app.get("/maquinas", async (req, res) => {
 
 // Rota para buscar máquinas por prédio (usada no mapa)
 app.get("/maquinas/por-predio", async (req, res) => {
-  // Pega o nome do prédio a partir dos parâmetros da URL (query parameter)
-  // Exemplo de chamada: /maquinas/por-predio?nome=P30
   const { nome } = req.query;
 
-  // Verifica se o parâmetro 'nome' foi enviado na requisição
   if (!nome) {
     return res.status(400).json({ erro: "O parâmetro 'nome' do prédio é obrigatório." });
   }
 
+  const numeroPredio = nome.replace(/^p/i, ''); 
+
   try {
-    // Adiciona um log para depuração
-    console.log(`Buscando máquinas para o prédio: ${nome}`);
+    console.log(`Recebido: ${nome}. Buscando por prédio: '${numeroPredio}'`);
     
-    // Busca no banco de dados por máquinas onde o campo 'predio'
-    // corresponde ao valor fornecido, ignorando maiúsculas e minúsculas.
+    // Agora, a busca é feita usando apenas o número do prédio.
     const maquinas = await Maquina.find({
-      predio: { $regex: new RegExp(`^${nome}$`, 'i') }
-    }).sort({ sala: 1 }); // Ordena por sala para um resultado mais organizado
+      predio: numeroPredio
+    }).sort({ sala: 1 });
 
-    // Adiciona um log com o resultado
     console.log(`Encontradas ${maquinas.length} máquinas.`);
-
-    // Retorna a lista de máquinas encontradas
     res.json(maquinas);
 
   } catch (err) {
@@ -107,7 +96,6 @@ app.get("/maquinas/por-predio", async (req, res) => {
   }
 });
 
-// Rota para excluir máquina pelo ID
 app.delete("/maquinas/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -119,21 +107,15 @@ app.delete("/maquinas/:id", async (req, res) => {
   }
 });
 
-// Rota para atualizar máquina pelo ID
 app.put("/maquinas/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const atualizada = await Maquina.findByIdAndUpdate(
       id,
-      { 
-        ...req.body,
-        ultimaAtualizacao: Date.now() 
-      },
+      { ...req.body, ultimaAtualizacao: Date.now() },
       { new: true }
     );
-    if (!atualizada) {
-      return res.status(404).json({ erro: "Máquina não encontrada." });
-    }
+    if (!atualizada) return res.status(404).json({ erro: "Máquina não encontrada." });
     res.json(atualizada);
   } catch (err) {
     console.error(err);
@@ -141,13 +123,9 @@ app.put("/maquinas/:id", async (req, res) => {
   }
 });
 
-// Rota para verificação de senha mestra
 app.post("/verify-master-password", (req, res) => {
   const { password } = req.body;
   const masterPassword = "teste";
-
-  console.log(`Verificando senha. Recebida: '${password}'`);
-
   if (password === masterPassword) {
     res.status(200).json({ success: true, message: "Acesso concedido." });
   } else {
@@ -155,7 +133,6 @@ app.post("/verify-master-password", (req, res) => {
   }
 });
 
-// Inicialização do servidor
 app.listen(PORT, () => {
   console.log(`Servidor rodando em http://localhost:${PORT}`);
 });
