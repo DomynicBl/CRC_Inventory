@@ -2,26 +2,31 @@
   "buildings": [
     {
       "id": "12",
+      "unit": "Coreu",
       "name": "Prédio 12 - Faculdade de Psicologia",
       "rooms": ["101", "102", "103", "104","105", "201", "202", "203", "204","205"]
     },
     {
       "id": "34",
+      "unit": "Coreu",
       "name": "Prédio 34 - FACE",
       "rooms": ["LAB01", "LAB02", "LAB02", "LAB03", "LAB04", "LAB05", "CRC"]
     },
     {
       "id": "30",
+      "unit": "Coreu",
       "name": "Prédio 30 - ICET",
       "rooms": ["101", "102", "103", "201", "202", "203"]
     },
     {
-      "id": "34",
+      "id": "13",
+      "unit": "Coreu",
       "name": "Prédio 34 - FACE",
       "rooms": ["110", "112", "210", "211", "212"]
     },
     {
       "id": "5",
+      "unit": "Coreu",
       "name": "Prédio 5 - Odontologia",
       "rooms": ["LAB01", "LAB02", "CONSULT01"]
     }

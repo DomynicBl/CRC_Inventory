@@ -23,6 +23,7 @@ dependencies:
   firebase_core: ^2.27.0 # Base do Firebase
   firebase_storage: ^11.6.9 # Firebase Storage
   shared_preferences: ^2.5.3
+  intl: ^0.18.1 # Internacionalização e formatação de datas
 
 # Dependências de desenvolvimento (testes, lints e ferramentas auxiliares)
 dev_dependencies:

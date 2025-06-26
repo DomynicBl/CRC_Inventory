@@ -1,123 +1,156 @@
 import 'package:flutter/material.dart';
-import '../../api/machine_service.dart';
-import '../Machines/edit_machine_form.dart';
+import 'package:intl/intl.dart';
 
-class MachineCard extends StatefulWidget {
+class MachineCard extends StatelessWidget {
   final Map<String, dynamic> machine;
-  final VoidCallback onUpdate;
+  final VoidCallback onUpdate; // Mantido para futuras interações
 
   const MachineCard({
-    super.key,
+    Key? key,
     required this.machine,
     required this.onUpdate,
-  });
+  }) : super(key: key);
 
-  @override
-  State<MachineCard> createState() => _MachineCardState();
-}
-
-class _MachineCardState extends State<MachineCard> {
-  bool _isHovering = false;
+  // Widget auxiliar para criar as linhas de especificação
+  Widget _buildSpecRow(IconData icon, String label, String? value) {
+    if (value == null || value.isEmpty) {
+      return const SizedBox.shrink(); // Não mostra a linha se não houver valor
+    }
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8.0),
+      child: Row(
+        children: [
+          Icon(icon, color: Colors.blueGrey, size: 20),
+          const SizedBox(width: 8),
+          Text(
+            '$label: ',
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+          Expanded(child: Text(value)),
+        ],
+      ),
+    );
+  }
+  
+  // Widget auxiliar para criar os títulos de seção
+  Widget _buildSectionTitle(String title) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
+          const Divider(),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    final m = widget.machine;
-    final id = m['_id'];
-    final dateStr = m['data'] ?? '';
+    // Formata a data de cadastro
+    String formattedDate = 'Data indisponível';
+    if (machine['dataCadastro'] != null) {
+      try {
+        final date = DateTime.parse(machine['dataCadastro']);
+        formattedDate = DateFormat("dd/MM/yyyy - HH:mm'h'").format(date);
+      } catch (e) {
+        // Tratar erro de parsing se necessário
+      }
+    }
+    
+    final problemDescription = machine['problema'];
 
-    final backgroundColor = _isHovering
-        ? const Color(0xFF002238)
-        : const Color.fromARGB(255, 199, 232, 255);
-    final textColor = _isHovering ? Colors.white : Colors.black;
-    final iconColor = _isHovering ? Colors.white : const Color(0xFF002238);
-
-    return MouseRegion(
-      onEnter: (_) => setState(() => _isHovering = true),
-      onExit: (_) => setState(() => _isHovering = false),
-      child: Material(
-        type: MaterialType.transparency,
-        child: InkWell(
-          onTap: () async {
-            try {
-              final updated = await Navigator.push<bool>(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => EditMachineForm(machine: m),
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // --- SEÇÃO SUPERIOR: IMAGEM E DADOS PRINCIPAIS ---
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Imagem da Máquina
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8.0),
+                  child: Image.network(
+                    'https://placehold.co/100x120/e2e8f0/334155?text=PC', // Imagem placeholder
+                    width: 100,
+                    height: 120,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => 
+                      const Icon(Icons.computer, size: 100, color: Colors.grey),
+                  ),
                 ),
-              );
-              if (updated == true) {
-                widget.onUpdate();
-              }
-            } catch (e, st) {
-              debugPrint('Erro ao abrir edição: $e\n$st');
-            }
-          },
-          hoverColor: Colors.transparent,
-          splashColor: Colors.transparent,
-          highlightColor: Colors.transparent,
-          child: Card(
-            elevation: 0,
-            shadowColor: Colors.transparent,
-            color: backgroundColor,
-            margin: const EdgeInsets.only(bottom: 3),
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(12, 1, 12, 1),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                const SizedBox(width: 16),
+                // Detalhes Principais
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Expanded(
-                        child: Text(
-                          m['nome'] ?? '',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: textColor,
-                          ),
-                        ),
+                      Text(
+                        machine['nome'] ?? 'Nome Indisponível',
+                        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                       ),
-                      IconButton(
-                        icon: Icon(Icons.delete, color: iconColor),
-                        onPressed: () async {
-                          try {
-                            await MachineService().deleteMachine(id);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Máquina excluída com sucesso!'),
-                              ),
-                            );
-                            widget.onUpdate();
-                          } catch (e) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('Erro ao excluir: $e')),
-                            );
-                          }
-                        },
-                      ),
+                      const SizedBox(height: 8),
+                      Text('Patrimônio: ${machine['patrimonio'] ?? 'N/A'}'),
+                      // A unidade virá do JSON de locais no futuro
+                      const Text('Unidade: Coração Eucarístico'), 
+                      Text('Prédio: ${machine['predio'] ?? 'N/A'}'),
+                      Text('Lab/Sala: ${machine['sala'] ?? 'N/A'}'),
                     ],
                   ),
-                  Text(
-                    'Patrimônio: ${m['patrimonio'] ?? ''}',
-                    style: TextStyle(color: textColor),
-                  ),
-                  const SizedBox(height: 8),
-                  Align(
-                    alignment: Alignment.bottomLeft,
-                    child: Text(
-                      dateStr,
-                      style: TextStyle(
-                        color: _isHovering ? Colors.white70 : Colors.grey,
-                      ),
-                    ),
-                  ),
-                ],
+                ),
+              ],
+            ),
+            
+            // --- SEÇÃO DE ESPECIFICAÇÕES ---
+            _buildSectionTitle('Especificações'),
+            _buildSpecRow(Icons.memory, 'CPU', machine['processador']),
+            _buildSpecRow(Icons.storage, 'SSD/HD', machine['armazenamento']),
+            _buildSpecRow(Icons.developer_board, 'RAM', machine['memoria']),
+
+            // --- SEÇÃO DE SOLICITAÇÃO (se houver problema) ---
+            if (problemDescription != null && problemDescription.isNotEmpty) ...[
+              _buildSectionTitle('Solicitação'),
+              Text(
+                problemDescription,
+                style: const TextStyle(fontStyle: FontStyle.italic),
+              ),
+            ],
+
+            // --- SEÇÃO DO EMISSOR ---
+            _buildSectionTitle('Emissor'),
+            Text(
+              'Master',
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            Text(formattedDate),
+
+            const SizedBox(height: 16),
+            
+            // Botão para fechar o diálogo
+            Center(
+              child: ElevatedButton.icon(
+                icon: const Icon(Icons.close),
+                label: const Text('Fechar'),
+                onPressed: () => Navigator.of(context).pop(),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blueGrey,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+                ),
               ),
             ),
-          ),
+          ],
         ),
       ),
     );
   }
 }
+

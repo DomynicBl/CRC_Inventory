@@ -2,7 +2,7 @@ import express from "express";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import cors from "cors";
-// Módulos adicionados para ler arquivos do servidor
+// Módulos necessários para ler arquivos do servidor
 import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -13,7 +13,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Configuração necessária para encontrar o caminho do arquivo no ambiente do Render
+// Configuração para __dirname funcionar com ES Modules no Render
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -30,7 +30,8 @@ mongoose.connect(MONGO_URI, {
   console.error("Erro ao conectar no MongoDB:", err);
 });
 
-// Schema da Máquina
+// --- SCHEMA ATUALIZADO ---
+// Adicionado o campo "armazenamento" para guardar dados de SSD/HD.
 const maquinaSchema = new mongoose.Schema({
   nome: String,
   patrimonio: String,
@@ -40,6 +41,7 @@ const maquinaSchema = new mongoose.Schema({
   modelo: String,
   processador: String,
   memoria: String,
+  armazenamento: String, // Campo novo
   problema: String,
   observacoes: String,
   dataCadastro: { type: Date, default: Date.now },
@@ -48,7 +50,9 @@ const maquinaSchema = new mongoose.Schema({
 
 const Maquina = mongoose.model("Maquina", maquinaSchema);
 
-// Rota para criar máquina
+// --- ROTAS DA APLICAÇÃO ---
+
+// Rota para CRIAR uma nova máquina
 app.post("/maquinas", async (req, res) => {
   try {
     const nova = new Maquina(req.body);
@@ -59,7 +63,7 @@ app.post("/maquinas", async (req, res) => {
   }
 });
 
-// Rota para buscar máquinas (por patrimônio ou todas)
+// Rota para BUSCAR máquinas (com filtro de patrimônio ou todas)
 app.get("/maquinas", async (req, res) => {
   const { patrimonio } = req.query;
   try {
@@ -78,14 +82,13 @@ app.get("/maquinas", async (req, res) => {
   }
 });
 
-// Rota para buscar máquinas por prédio (usada no mapa)
+// Rota para BUSCAR máquinas por prédio (usada no mapa)
 app.get("/maquinas/por-predio", async (req, res) => {
   const { nome } = req.query;
   if (!nome) {
     return res.status(400).json({ erro: "O parâmetro 'nome' do prédio é obrigatório." });
   }
-  // Remove o "P" do início para buscar pelo número (Ex: "P30" vira "30")
-  const numeroPredio = nome.replace(/^p/i, ''); 
+  const numeroPredio = nome.replace(/^p/i, '');
   try {
     const maquinas = await Maquina.find({ predio: numeroPredio }).sort({ sala: 1 });
     res.json(maquinas);
@@ -95,7 +98,7 @@ app.get("/maquinas/por-predio", async (req, res) => {
   }
 });
 
-// Rota para excluir máquina pelo ID
+// Rota para EXCLUIR uma máquina pelo ID
 app.delete("/maquinas/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -107,7 +110,7 @@ app.delete("/maquinas/:id", async (req, res) => {
   }
 });
 
-// Rota para atualizar máquina pelo ID
+// Rota para ATUALIZAR uma máquina pelo ID
 app.put("/maquinas/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -126,9 +129,7 @@ app.put("/maquinas/:id", async (req, res) => {
   }
 });
 
-
-// --- NOVA ROTA PARA VALIDAR LOCAIS ---
-// Esta rota lê o arquivo `locations.json` e o envia para o app.
+// Rota para BUSCAR os locais (prédios e salas)
 app.get("/locations", async (req, res) => {
   try {
     const data = await fs.readFile(path.join(__dirname, 'locations.json'), 'utf-8');
@@ -140,8 +141,7 @@ app.get("/locations", async (req, res) => {
   }
 });
 
-
-// Rota para verificação da senha mestra
+// Rota para VERIFICAR a senha mestra
 app.post("/verify-master-password", (req, res) => {
   const { password } = req.body;
   const masterPassword = "teste";
@@ -151,7 +151,6 @@ app.post("/verify-master-password", (req, res) => {
     res.status(401).json({ success: false, message: "Senha incorreta." });
   }
 });
-
 
 // Inicialização do Servidor
 app.listen(PORT, () => {
