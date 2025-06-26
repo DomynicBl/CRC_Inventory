@@ -9,7 +9,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const PORT = process.env.PORT || 3000;
+// const PORT = process.env.PORT || 3000;
 const MONGO_URI = process.env.MONGODB_URI;
 
 // Conectar ao MongoDB Atlas
@@ -132,6 +132,7 @@ app.put("/maquinas/:id", async (req, res) => {
     res.status(500).json({ erro: "Erro ao atualizar máquina." });
   }
 });
+
 
 // =================================================================
 //          ROTA PARA VERIFICAÇÃO DA SENHA MESTRA
