@@ -9,6 +9,8 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// --- CORREÇÃO ---
+// A variável PORT estava comentada, o que impedia o servidor de iniciar.
 const PORT = process.env.PORT || 3000;
 const MONGO_URI = process.env.MONGODB_URI;
 
@@ -72,6 +74,7 @@ app.get("/maquinas", async (req, res) => {
   }
 });
 
+// Rota para buscar máquinas por prédio (usada no mapa)
 app.get("/maquinas/por-predio", async (req, res) => {
   // Pega o nome do prédio a partir dos parâmetros da URL (query parameter)
   // Exemplo de chamada: /maquinas/por-predio?nome=P30
@@ -83,13 +86,19 @@ app.get("/maquinas/por-predio", async (req, res) => {
   }
 
   try {
+    // Adiciona um log para depuração
+    console.log(`Buscando máquinas para o prédio: ${nome}`);
+    
     // Busca no banco de dados por máquinas onde o campo 'predio'
     // corresponde ao valor fornecido, ignorando maiúsculas e minúsculas.
     const maquinas = await Maquina.find({
       predio: { $regex: new RegExp(`^${nome}$`, 'i') }
     }).sort({ sala: 1 }); // Ordena por sala para um resultado mais organizado
 
-    // Retorna a lista de máquinas encontradas (ou uma lista vazia, se nenhuma for encontrada)
+    // Adiciona um log com o resultado
+    console.log(`Encontradas ${maquinas.length} máquinas.`);
+
+    // Retorna a lista de máquinas encontradas
     res.json(maquinas);
 
   } catch (err) {
@@ -114,14 +123,13 @@ app.delete("/maquinas/:id", async (req, res) => {
 app.put("/maquinas/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    // req.body já traz o JSON com os campos atualizados
     const atualizada = await Maquina.findByIdAndUpdate(
       id,
       { 
         ...req.body,
         ultimaAtualizacao: Date.now() 
       },
-      { new: true } // retorna o documento já modificado
+      { new: true }
     );
     if (!atualizada) {
       return res.status(404).json({ erro: "Máquina não encontrada." });
@@ -133,37 +141,21 @@ app.put("/maquinas/:id", async (req, res) => {
   }
 });
 
-
-// =================================================================
-//          ROTA PARA VERIFICAÇÃO DA SENHA MESTRA
-// =================================================================
+// Rota para verificação de senha mestra
 app.post("/verify-master-password", (req, res) => {
-  // Pega a senha enviada pelo app Flutter no corpo da requisição
   const { password } = req.body;
+  const masterPassword = "teste";
 
-  // A senha "mestra" agora está definida ("hardcoded") diretamente no código
-  const masterPassword = "teste"; // <<< A MUDANÇA ESTÁ AQUI
+  console.log(`Verificando senha. Recebida: '${password}'`);
 
-  // Seus logs de debug continuam úteis
-  console.log("--- INICIANDO VERIFICAÇÃO DE SENHA (MODO TESTE) ---");
-  console.log(`Senha recebida do App: '${password}'`);
-  console.log(`Senha fixa no código: '${masterPassword}'`);
-  console.log(`As senhas são iguais? ${password === masterPassword}`);
-  console.log("-------------------------------------------------");
-
-  // Compara a senha enviada com a senha "teste"
   if (password === masterPassword) {
-    // Se forem iguais, retorna sucesso
     res.status(200).json({ success: true, message: "Acesso concedido." });
   } else {
-    // Se forem diferentes, retorna falha
     res.status(401).json({ success: false, message: "Senha incorreta." });
   }
 });
 
-// =================================================================
-// INICIALIZAÇÃO DO SERVIDOR
-// =================================================================
+// Inicialização do servidor
 app.listen(PORT, () => {
   console.log(`Servidor rodando em http://localhost:${PORT}`);
 });

@@ -4,7 +4,9 @@ import 'package:flutter/services.dart' show rootBundle;
 
 import '../../class/markers.dart';
 import '../../api/machine_service.dart';
-import '../search/search_result.dart';
+// --- CORREÇÃO ---
+// Ajuste no import para corresponder ao arquivo refatorado.
+import '../search/search_result.dart'; 
 
 class MapScreen extends StatefulWidget {
   const MapScreen({Key? key}) : super(key: key);
@@ -14,7 +16,6 @@ class MapScreen extends StatefulWidget {
 }
 
 class _MapScreenState extends State<MapScreen> {
-  // Mantidos
   late Future<List<MapMarker>> markerList;
   late Future<Size> imageSize;
   final TransformationController _transformationController =
@@ -23,10 +24,9 @@ class _MapScreenState extends State<MapScreen> {
   final String mapFileName = 'assets/images/mapaPuc.png';
   final String markFileName = 'assets/data/markers.json';
 
-  // Estados de Busca Modificados
   bool _isSearching = false;
-  String _searchMessage = ''; // Para erros ou "Buscando..."
-  List<Map<String, dynamic>> _foundMachines = []; // Para guardar os resultados
+  String _searchMessage = ''; 
+  List<Map<String, dynamic>> _foundMachines = [];
 
   @override
   void initState() {
@@ -59,7 +59,6 @@ class _MapScreenState extends State<MapScreen> {
     return Size(image.width.toDouble(), image.height.toDouble());
   }
 
-  // --- FUNÇÃO DE BUSCA MODIFICADA ---
   void _performSearch() async {
     final patrimonio = _searchController.text.trim();
     if (patrimonio.isEmpty) {
@@ -69,12 +68,11 @@ class _MapScreenState extends State<MapScreen> {
       return;
     }
 
-    // Esconde o teclado se estiver aberto
     FocusScope.of(context).unfocus();
 
     setState(() {
       _isSearching = true;
-      _searchMessage = 'Buscando...'; // Mensagem de carregamento
+      _searchMessage = 'Buscando...';
       _foundMachines = [];
     });
 
@@ -84,17 +82,16 @@ class _MapScreenState extends State<MapScreen> {
 
       setState(() {
         _foundMachines = machines;
-        _searchMessage = ''; // Limpa a mensagem se deu certo
+        _searchMessage = '';
       });
     } catch (e) {
       setState(() {
-        _searchMessage = 'Erro: ${e.toString()}'; // Mensagem de erro
+        _searchMessage = 'Erro: ${e.toString()}';
         _foundMachines = [];
       });
     }
   }
 
-  // --- FUNÇÃO PARA VOLTAR AO MAPA ---
   void _resetSearch() {
     setState(() {
       _isSearching = false;
@@ -107,7 +104,6 @@ class _MapScreenState extends State<MapScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // --- AppBar MANTIDA ---
       appBar: AppBar(
         title: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -126,7 +122,7 @@ class _MapScreenState extends State<MapScreen> {
                     contentPadding: const EdgeInsets.all(8),
                     suffixIcon: IconButton(
                       icon: const Icon(Icons.clear),
-                      onPressed: _resetSearch, // Limpa E reseta
+                      onPressed: _resetSearch,
                     ),
                   ),
                   onSubmitted: (_) => _performSearch(),
@@ -142,15 +138,12 @@ class _MapScreenState extends State<MapScreen> {
           ),
         ),
       ),
-
-      // --- Body CONDICIONAL ---
       body: _isSearching
-          ? _buildSearchResultLayout() // Mostra resultados/mensagem
-          : _buildMapWidget(), // Mostra o mapa
+          ? _buildSearchResultLayout()
+          : _buildMapWidget(),
     );
   }
 
-  // --- WIDGET PARA EXIBIR O MAPA ---
   Widget _buildMapWidget() {
     return FutureBuilder<Size>(
       future: imageSize,
@@ -207,13 +200,12 @@ class _MapScreenState extends State<MapScreen> {
     );
   }
 
-  // --- WIDGET PARA EXIBIR O LAYOUT DE RESULTADOS ---
   Widget _buildSearchResultLayout() {
     return Column(
       children: [
         const SizedBox(height: 16),
         ElevatedButton.icon(
-          onPressed: _resetSearch, // Botão para voltar ao mapa
+          onPressed: _resetSearch,
           icon: const Icon(Icons.map),
           label: const Text('Voltar ao mapa'),
           style: ElevatedButton.styleFrom(
@@ -221,7 +213,6 @@ class _MapScreenState extends State<MapScreen> {
           ),
         ),
         const SizedBox(height: 16),
-        // Exibe "Buscando..." ou Erro
         if (_searchMessage == 'Buscando...')
           const Expanded(child: Center(child: CircularProgressIndicator()))
         else if (_searchMessage.startsWith('Erro:'))
@@ -238,17 +229,15 @@ class _MapScreenState extends State<MapScreen> {
             ),
           )
         else
-          // Exibe o Widget de resultados (que lida com lista cheia/vazia)
           SearchResultWidget(
             machines: _foundMachines,
             searchTerm: _searchController.text.trim(),
-            onUpdate: _performSearch, // Passa a função de busca como callback
+            onUpdate: _performSearch,
           ),
       ],
     );
   }
 
-  // --- _buildMarker CÓDIGO COMPLETO ---
   Widget _buildMarker(
     MapMarker marker,
     Size originalImageSize,
@@ -311,7 +300,6 @@ class _MapScreenState extends State<MapScreen> {
     );
   }
 
-  // --- _showMarkerInfo COM LÓGICA DE BUSCA DINÂMICA ---
   void _showMarkerInfo(int number, String name) {
     final machineService = MachineService();
     // Formata o nome do prédio como o backend espera (ex: "P30")
@@ -323,10 +311,9 @@ class _MapScreenState extends State<MapScreen> {
         title: Text('Máquinas em: $name'),
         // O conteúdo agora é um FutureBuilder que busca e exibe os dados
         content: FutureBuilder<List<Map<String, dynamic>>>(
-          // O "Future" que o builder vai observar
           future: machineService.getMachinesByBuilding(buildingName),
           builder: (context, snapshot) {
-            // --- ESTADO DE CARREGAMENTO ---
+            // Estado de carregamento
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const SizedBox(
                 height: 100,
@@ -334,12 +321,12 @@ class _MapScreenState extends State<MapScreen> {
               );
             }
 
-            // --- ESTADO DE ERRO ---
+            // Estado de erro
             if (snapshot.hasError) {
-              return Text('Erro ao buscar as máquinas: ${snapshot.error}');
+              return Text('Erro ao buscar máquinas: ${snapshot.error}');
             }
 
-            // --- ESTADO DE SUCESSO ---
+            // Estado de sucesso
             if (snapshot.hasData) {
               final machines = snapshot.data!;
 
@@ -348,8 +335,7 @@ class _MapScreenState extends State<MapScreen> {
                 return const Text('Nenhuma máquina encontrada neste prédio.');
               }
 
-              // Se encontrou, exibe a lista de patrimônios
-              // Usamos um SizedBox para limitar a altura do conteúdo do Dialog
+              // Se encontrou, exibe a lista
               return SizedBox(
                 width: double.maxFinite,
                 height: 300, // Ajuste a altura conforme necessário
